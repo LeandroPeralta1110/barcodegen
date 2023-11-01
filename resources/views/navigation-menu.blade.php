@@ -15,11 +15,17 @@
                     <x-nav-link href="{{ route('dashboard') }}" :active="request()->routeIs('dashboard')">
                         {{ __('Dashboard') }}
                     </x-nav-link>
-                </div>
-                <div class="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex">
-                    <x-nav-link href="{{ route('generar-codigo-barras') }}" :active="request()->routeIs('dashboard')">
+                    <x-nav-link href="{{ route('generar-codigo-barras') }}" :active="request()->routeIs('generar-codigo-barras')">
                         Generar Codigo
                     </x-nav-link>
+                    @role('administrador')
+                    <x-nav-link href="{{ route('create-user') }}" :active="request()->routeIs('create-user')">
+                        Crear Usuario
+                    </x-nav-link>
+                    <x-nav-link href="{{ route('create-product') }}" :active="request()->routeIs('create-product')">
+                        Crear Producto
+                    </x-nav-link>
+                    @endrole
                 </div>
             </div>
 
@@ -145,6 +151,11 @@
             <x-responsive-nav-link href="{{ route('dashboard') }}" :active="request()->routeIs('dashboard')">
                 {{ __('Dashboard') }}
             </x-responsive-nav-link>
+
+            <x-responsive-nav-link href="{{ route('generar-codigo-barras') }}" :active="request()->routeIs('generar-codigo-barras')">
+                Generar Codigo
+            </x-responsive-nav-link>
+       
         </div>
 
         <!-- Responsive Settings Options -->
