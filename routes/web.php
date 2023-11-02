@@ -4,6 +4,7 @@ use App\Http\Livewire\AdminController;
 use Illuminate\Support\Facades\Route;
 
 use App\Http\Livewire\CodigoBarrasGenerator;
+use App\Http\Controllers\ProductController;
 
 /*
 |--------------------------------------------------------------------------
@@ -33,9 +34,7 @@ Route::middleware([
 });
 
 // Ruta para crear un usuario
-Route::get('/create-user', [AdminController::class, 'showCreateUserForm'])->name('create-user');
-Route::post('/create-user', [AdminController::class, 'createUser']);
+Route::post('/create-user', [AdminController::class, 'createUser'])->name('create-user');
 
 // Ruta para crear un producto
-Route::get('/create-product', [AdminController::class, 'showCreateProductForm'])->name('create-product');
-Route::post('/create-product', [AdminController::class, 'crearProducto']);
+Route::resource('/products', App\Http\Controllers\ProductController::class);

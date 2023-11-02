@@ -59,10 +59,10 @@ public function showCreateProductForm()
 
    public function crearProducto()
 {
-   $this->validate([
-    'nombre' => 'required|string',
-    'descripcion' => 'required',
-    ]); 
+    $this->validate([
+        'nombre' => 'required|string',
+        'descripcion' => 'required|string', // Cambiado a 'string'
+    ]);    
 
     // Crea el nuevo producto en la base de datos
     Product::create([

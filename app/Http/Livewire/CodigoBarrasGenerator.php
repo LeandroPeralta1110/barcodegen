@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Auth;
 use Spatie\Image\Image;
 use Dompdf\Dompdf;
 use Dompdf\Options;
+use App\Models\Product;
 
 class CodigoBarrasGenerator extends Component
 {
@@ -19,77 +20,89 @@ class CodigoBarrasGenerator extends Component
 
     public $codigoGenerado;
     public $numeroCodigo;
-    public $tipoCodigoBarras = 'C128'; // Valor predeterminado
+    public $tipoCodigoBarras = 'C128';
+    public $selectedProduct;
+    public $products;
 
     public function generarCodigo()
-    {
-        do {
-            $nuevoCodigo = strval(mt_rand(100000, 999999));
-        } while (CodigoBarras::where('codigo_barras', $nuevoCodigo)->exists());
-    
-        $this->numeroCodigo = $nuevoCodigo;
-    
-        $generator = new BarcodeGeneratorPNG();
-        $code2 = str_replace(' ', '', $nuevoCodigo);
-    
-        // Obtener la imagen del código de barras
-        $imgData = $generator->getBarcode($code2, $this->tipoCodigoBarras);
-        $img = imagecreatefromstring($imgData);
-    
-        // Calcular el ancho y alto de la imagen del código de barras
-        $anchoCodigo = imagesx($img);
-        $altoCodigo = imagesy($img);
-    
-        // Espaciado entre los números y el código de barras
-        $espaciadoNumeros = 10;
-    
-        // Calcular el ancho total
-        $anchoDeseado = $anchoCodigo;
-        $altoDeseado = $altoCodigo + $espaciadoNumeros + 40; // Agregar espacio para el número
-    
-        // Crear la imagen combinada con el nuevo tamaño
-        $combinedImg = imagecreatetruecolor($anchoDeseado, $altoDeseado);
-    
-        // Crear un color blanco para el fondo
-        $colorFondo = imagecolorallocate($combinedImg, 255, 255, 255);
-    
-        // Rellenar el fondo con blanco
-        imagefilledrectangle($combinedImg, 0, 0, $anchoDeseado, $altoDeseado, $colorFondo);
-    
-        // Calcular la posición donde se copiará el código de barras en la imagen (centrado horizontalmente)
-        $xCodigo = ($anchoDeseado - $anchoCodigo) / 2;
-        $yCodigo = 0;
-    
-        // Copiar el código de barras en la imagen combinada
-        imagecopy($combinedImg, $img, $xCodigo, $yCodigo, 0, 0, $anchoCodigo, $altoCodigo);
-    
-        // Crear un color negro para el número de código
-        $colorTexto = imagecolorallocate($combinedImg, 0, 0, 0);
-    
-        // Calcular la posición donde se agregarán los números de código (centrado horizontalmente y debajo del código)
-        $font_size = 20; // Tamaño de fuente
-        $xNumero = ($anchoDeseado - imagefontwidth($font_size) * strlen($nuevoCodigo)) / 2;
-        $yNumero = $altoCodigo + $espaciadoNumeros; // Espacio entre el código y el número
-    
-        // Agregar el número de código de barras como texto en la imagen combinada
-        imagestring($combinedImg, $font_size, $xNumero, $yNumero, $nuevoCodigo, $colorTexto);
-    
-        // Generar la imagen combinada en tiempo real y mostrarla en la vista
-        ob_start();
-        imagepng($combinedImg);
-        $imagenCombinada = 'data:image/png;base64,' . base64_encode(ob_get_clean());
-        imagedestroy($combinedImg);
-    
-        $this->codigoGenerado = $imagenCombinada;
-        
-        // Guardar el código en la base de datos
-        $codigoBarras = new CodigoBarras([
-            'codigo_barras' => $nuevoCodigo,
-            'usuario_id' => auth()->id(),
-        ]);
-    
-        $codigoBarras->save();
-    }    
+{
+    do {
+        $nuevoCodigo = strval(mt_rand(100000, 999999));
+    } while (CodigoBarras::where('codigo_barras', $nuevoCodigo)->exists());
+
+    $this->numeroCodigo = $nuevoCodigo;
+
+    $generator = new BarcodeGeneratorPNG();
+    $code2 = str_replace(' ', '', $nuevoCodigo);
+
+    // Obtener la imagen del código de barras
+    $imgData = $generator->getBarcode($code2, $this->tipoCodigoBarras);
+    $img = imagecreatefromstring($imgData);
+
+    // Calcular el ancho y alto de la imagen del código de barras
+    $anchoCodigo = imagesx($img);
+    $altoCodigo = imagesy($img);
+
+    // Espaciado entre los números y el código de barras
+    $espaciadoNumeros = 10;
+
+    // Aumentar el alto de la imagen para dar más espacio al número de código de barras
+    $altoDeseado = $altoCodigo + $espaciadoNumeros + 100; // Aumenta el espacio para el número
+
+    // Crear la imagen combinada con el nuevo tamaño
+    $combinedImg = imagecreatetruecolor($anchoCodigo, $altoDeseado);
+
+    // Crear un color blanco para el fondo
+    $colorFondo = imagecolorallocate($combinedImg, 255, 255, 255);
+
+    // Rellenar el fondo con blanco
+    imagefilledrectangle($combinedImg, 0, 0, $anchoCodigo, $altoDeseado, $colorFondo);
+
+    // Obtener el producto seleccionado
+    $product = Product::find($this->selectedProduct);
+
+    // Crear un color negro para el texto
+    $colorTexto = imagecolorallocate($combinedImg, 0, 0, 0);
+
+    // Calcular la posición para el nombre del producto
+    $font_size = 20; // Tamaño de fuente
+    $xNombreProducto = ($anchoCodigo - imagefontwidth($font_size) * strlen($product->nombre)) / 2;
+    $yNombreProducto = 10; // Espacio desde la parte superior
+
+    // Agregar el nombre del producto como texto en la imagen combinada
+    imagestring($combinedImg, $font_size, $xNombreProducto, $yNombreProducto, $product->nombre, $colorTexto);
+
+    // Calcular la posición donde se copiará el código de barras en la imagen (centrado horizontalmente)
+    $xCodigo = ($anchoCodigo - $anchoCodigo) / 2;
+    $yCodigo = $yNombreProducto + $font_size + $espaciadoNumeros; // Espacio entre el nombre y el código
+
+    // Copiar el código de barras en la imagen combinada
+    imagecopy($combinedImg, $img, $xCodigo, $yCodigo, 0, 0, $anchoCodigo, $altoCodigo);
+
+    // Calcular la posición para el número de código de barras
+    $xNumero = ($anchoCodigo - imagefontwidth($font_size) * strlen($nuevoCodigo)) / 2;
+    $yNumero = $yCodigo + $altoCodigo + $espaciadoNumeros; // Espacio entre el código y el número
+
+    // Agregar el número de código de barras como texto en la imagen combinada
+    imagestring($combinedImg, $font_size, $xNumero, $yNumero, $nuevoCodigo, $colorTexto);
+
+    // Generar la imagen combinada en tiempo real y mostrarla en la vista
+    ob_start();
+    imagepng($combinedImg);
+    $imagenCombinada = 'data:image/png;base64,' . base64_encode(ob_get_clean());
+    imagedestroy($combinedImg);
+
+    $this->codigoGenerado = $imagenCombinada;
+
+    // Guardar el código en la base de datos
+    $codigoBarras = new CodigoBarras([
+        'codigo_barras' => $nuevoCodigo,
+        'usuario_id' => auth()->id(),
+        'product_id' => $product->id,
+    ]);
+
+    $codigoBarras->save();
+}
 
     public function descargarCodigo()
 {
@@ -177,6 +190,7 @@ public function obtenerUltimoCodigoGenerado()
 }
     public function render()
     {
+        $this->products = Product::all();
         $codigosGenerados = $this->getCodigosGenerados();
         return view('livewire.codigo-barras-generator');
     }

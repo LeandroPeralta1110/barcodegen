@@ -22,7 +22,7 @@
                     <x-nav-link href="{{ route('create-user') }}" :active="request()->routeIs('create-user')">
                         Crear Usuario
                     </x-nav-link>
-                    <x-nav-link href="{{ route('create-product') }}" :active="request()->routeIs('create-product')">
+                    <x-nav-link href="{{ route('products.index') }}" :active="request()->routeIs('products.index')">
                         Crear Producto
                     </x-nav-link>
                     @endrole
