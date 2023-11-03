@@ -19,7 +19,7 @@
                         Generar Codigo
                     </x-nav-link>
                     @role('administrador')
-                    <x-nav-link href="{{ route('create-user') }}" :active="request()->routeIs('create-user')">
+                    <x-nav-link href="{{ route('users.index') }}" :active="request()->routeIs('users.index')">
                         Crear Usuario
                     </x-nav-link>
                     <x-nav-link href="{{ route('products.index') }}" :active="request()->routeIs('products.index')">

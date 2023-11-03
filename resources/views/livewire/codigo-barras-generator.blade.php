@@ -11,7 +11,7 @@
                 </select>                
             </div>
             <div class="mb-4">  
-                <label for="" class="control-label mt-2">Tipo de Código de Barras</label>
+                <label for="" class "control-label mt-2">Tipo de Código de Barras</label>
                 <select class="browser-default custom-select" wire:model="tipoCodigoBarras">
                     <option value="C128">Code 128</option>
                     <option value="C128A">Code 128 A</option>
@@ -22,23 +22,36 @@
                 </select>
             </div>
             <div class="mb-4">
+                <label for="cantidadCodigos" class="control-label mt-2">Cantidad de Códigos de Barras a Generar</label>
+                <input wire:model="cantidadCodigos" type="number" class="border rounded-md w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
+            </div>
+            <div class="mb-4">
                 <label for="code" class="block"></label>
-                <button wire:click="generarCodigo" id="code" class="border border-gray-300 rounded p-2" placeholder="Código">>Generar Código de Barras</button>
+                <button wire:click="generarCodigos" id="code" class="border border-gray-300 rounded p-2" placeholder="Código">Generar Código de Barras</button>
             </div>
         </div>
 
-        <div class="w-1/2 ml-4"> <!-- Margen agregado aquí para acercar los contenedores -->
-            <div class="bg-white border border-gray-300 p-4 mt-1"> <!-- Ajustado el margen superior aquí -->
+        <div class="w-1/2 ml-4">
+            <div class="bg-white border border-gray-300 p-4 mt-1">
                 <div id="display" class="flex flex-col items-center">
-                    @if ($codigoGenerado)
+                    @if($imagenesGeneradas)
                         <div id="field" style="width: auto;">
-                            <img src="{{ $codigoGenerado }}" alt="Código de barras" style="width: 100%; height: auto;" />
+                            <div class="image-grid">
+                                @foreach ($imagenesGeneradas as $imagenGenerada)
+                                    <div class="image-item">
+                                        <img src="{{ $imagenGenerada }}" alt="Código de barras" style="width: 100%; height: auto;" />
+                                    </div>
+                                @endforeach
+                            </div>
                         </div>
-                        <button wire:click="descargarCodigo" class="bg-blue-500 hover-bg-blue-700 text-white font-bold py-2 px-4 rounded mt-2">Descargar Código de Barras</button> <!-- Ajustado el margen superior aquí -->
-                    @endif
+                        <button wire:click="emitirCodigosGenerados" id="emitirCodigos" class="border border-gray-300 rounded p-2">Imprimir Códigos Secuencialmente</button>
+                        @endif
                 </div>
             </div>
-        </div>
-        
+        </div>        
     </div>
 </div>
+<script>
+    // Almacena las imágenes generadas en una variable JavaScript
+    window.imagenesGeneradas = @json($imagenesGeneradas);
+</script>

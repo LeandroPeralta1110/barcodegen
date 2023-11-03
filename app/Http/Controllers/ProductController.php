@@ -31,6 +31,7 @@ class ProductController extends Controller
      */
     public function create()
     {
+        $this->authorize('create product', Product::class);
         $product = new Product();
         return view('product.create', compact('product'));
     }
@@ -71,7 +72,9 @@ class ProductController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function edit($id)
-    {
+    { 
+        $this->authorize('edit product', Product::class);
+
         $product = Product::find($id);
 
         return view('product.edit', compact('product'));
@@ -100,10 +103,22 @@ class ProductController extends Controller
      * @throws \Exception
      */
     public function destroy($id)
-    {
-        $product = Product::find($id)->delete();
+{
+    $this->authorize('delete product', Product::class);
 
-        return redirect()->route('products.index')
-            ->with('success', 'Product deleted successfully');
+    $product = Product::with('codigosBarras')->find($id);
+
+    if (!$product) {
+        return redirect()->route('products.index')->with('error', 'Product not found.');
     }
+
+    // Eliminar los códigos de barras relacionados
+    $product->codigosBarras()->delete();
+
+    // Eliminar el producto
+    $product->delete();
+
+    return redirect()->route('products.index')->with('success', 'Product and related barcodes deleted successfully');
+}
+
 }

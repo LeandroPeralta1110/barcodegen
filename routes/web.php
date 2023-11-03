@@ -5,7 +5,9 @@ use Illuminate\Support\Facades\Route;
 
 use App\Http\Livewire\CodigoBarrasGenerator;
 use App\Http\Controllers\ProductController;
-
+use Spatie\Permission\Models\Role;
+use Spatie\Permission\Models\Permission;
+use App\Http\Controllers\UserController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -31,10 +33,15 @@ Route::middleware([
     Route::get('/dashboard', [CodigoBarrasGenerator::class,'getCodigosGenerados'], function () {
         return view('dashboard');
     })->name('dashboard');
+    
+    Route::middleware('can:create product')->group(function () {
+    // Ruta para crear un producto
+        Route::resource('/products', App\Http\Controllers\ProductController::class);
+        
+    });
+    Route::middleware('can:create user')->group(function () {
+        Route::resource('/users', App\Http\Controllers\UserController::class);
+        Route::name('users.create')->get('/users/create', [UserController::class, 'create']);
+    });
 });
 
-// Ruta para crear un usuario
-Route::post('/create-user', [AdminController::class, 'createUser'])->name('create-user');
-
-// Ruta para crear un producto
-Route::resource('/products', App\Http\Controllers\ProductController::class);

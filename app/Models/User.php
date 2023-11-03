@@ -32,6 +32,12 @@ class User extends Authenticatable
         'password',
     ];
 
+    public static $rules = [
+        'name' => 'required|string|max:255',
+        'email' => 'required|email|unique:users,email',
+        'password' => 'required|string|min:8',
+    ];
+
     /**
      * The attributes that should be hidden for serialization.
      *

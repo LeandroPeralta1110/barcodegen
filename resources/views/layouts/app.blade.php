@@ -51,6 +51,56 @@
                 link.click();
             });
         }
+
+        document.addEventListener('livewire:load', function () {
+    Livewire.on('codigos-generados', function (imagenesGeneradas) {
+        const imprimirCódigos = async (imagenes) => {
+            // Crear una página HTML con una tabla que contiene las imágenes
+            const vistaPrevia = `
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>Vista Previa de Impresión</title>
+                </head>
+                <body style="margin: 0; padding: 0;">
+                    <table style="width: 210mm; height: 297mm; border-collapse: collapse;">
+                        ${imagenes.map(imagen => `
+                            <tr>
+                                <td style="border: 1px solid #000; text-align: center; vertical-align: middle;">
+                                    <img src="${imagen}" style="max-width: 100%; max-height: 100%;" />
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </table>
+                </body>
+                </html>
+            `;
+
+            // Abrir una nueva ventana con la vista previa de impresión
+            const ventanaImpresion = window.open('', '', 'width=800,height=1000');
+            ventanaImpresion.document.open();
+            ventanaImpresion.document.write(vistaPrevia);
+            ventanaImpresion.document.close();
+
+            // Esperar un breve momento para asegurarse de que el contenido se cargue completamente
+            await new Promise(resolve => setTimeout(resolve, 1000));
+
+            try {
+                ventanaImpresion.print();
+                ventanaImpresion.onafterprint = function () {
+                    ventanaImpresion.close();
+                };
+            } catch (error) {
+                console.error('Error al imprimir la vista previa:', error);
+                ventanaImpresion.close();
+            }
+        }
+
+        // Llama a la función para imprimir la vista previa de códigos generados
+        imprimirCódigos(imagenesGeneradas);
+    });
+});
+
         </script>
     </body>
 </html>

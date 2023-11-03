@@ -13,6 +13,12 @@ use Spatie\Image\Image;
 use Dompdf\Dompdf;
 use Dompdf\Options;
 use App\Models\Product;
+use Mike42\Escpos\EscposImage;
+use Mike42\Escpos\Printer;
+use Mike42\Escpos\PrintConnectors\FilePrintConnector;
+use Mike42\Escpos\PrintConnectors\PrintConnector;
+use Mike42\Escpos\PrintConnectors\WindowsPrintConnector;
+use Mike42\Escpos\PrintConnectors\PrintConnectorInterface;
 
 class CodigoBarrasGenerator extends Component
 {
@@ -23,20 +29,38 @@ class CodigoBarrasGenerator extends Component
     public $tipoCodigoBarras = 'C128';
     public $selectedProduct;
     public $products;
+    public $imagenesGeneradas;
+    public $cantidadCodigos;
 
-    public function generarCodigo()
+public function generarCodigo()
 {
     do {
-        $nuevoCodigo = strval(mt_rand(100000, 999999));
+        $nuevoCodigo = $this->generateUniqueCode(); // Genera un nuevo código alfanumérico único
     } while (CodigoBarras::where('codigo_barras', $nuevoCodigo)->exists());
 
     $this->numeroCodigo = $nuevoCodigo;
 
-    $generator = new BarcodeGeneratorPNG();
-    $code2 = str_replace(' ', '', $nuevoCodigo);
+    // Genera el código de barras a partir del código alfanumérico
+    $this->generateBarcodeFromCode($nuevoCodigo);
+}
 
-    // Obtener la imagen del código de barras
-    $imgData = $generator->getBarcode($code2, $this->tipoCodigoBarras);
+private function generateUniqueCode()
+{
+    $product = Product::find($this->selectedProduct);
+
+    // Genera un número aleatorio de 6 dígitos
+    $numeroAleatorio = strval(mt_rand(100000, 999999));
+
+    // Crea un código alfanumérico único concatenando la descripción del producto y el número aleatorio
+    $codigoAlfanumerico = $product->descripcion . $numeroAleatorio;
+
+    return $codigoAlfanumerico;
+}
+
+private function generateBarcodeFromCode($code)
+{
+    $generator = new BarcodeGeneratorPNG();
+    $imgData = $generator->getBarcode($code, $this->tipoCodigoBarras);
     $img = imagecreatefromstring($imgData);
 
     // Calcular el ancho y alto de la imagen del código de barras
@@ -80,11 +104,11 @@ class CodigoBarrasGenerator extends Component
     imagecopy($combinedImg, $img, $xCodigo, $yCodigo, 0, 0, $anchoCodigo, $altoCodigo);
 
     // Calcular la posición para el número de código de barras
-    $xNumero = ($anchoCodigo - imagefontwidth($font_size) * strlen($nuevoCodigo)) / 2;
+    $xNumero = ($anchoCodigo - imagefontwidth($font_size) * strlen($code)) / 2;
     $yNumero = $yCodigo + $altoCodigo + $espaciadoNumeros; // Espacio entre el código y el número
 
     // Agregar el número de código de barras como texto en la imagen combinada
-    imagestring($combinedImg, $font_size, $xNumero, $yNumero, $nuevoCodigo, $colorTexto);
+    imagestring($combinedImg, $font_size, $xNumero, $yNumero, $code, $colorTexto);
 
     // Generar la imagen combinada en tiempo real y mostrarla en la vista
     ob_start();
@@ -94,14 +118,25 @@ class CodigoBarrasGenerator extends Component
 
     $this->codigoGenerado = $imagenCombinada;
 
-    // Guardar el código en la base de datos
+    // Guarda el código en la base de datos
     $codigoBarras = new CodigoBarras([
-        'codigo_barras' => $nuevoCodigo,
+        'codigo_barras' => $code,
         'usuario_id' => auth()->id(),
-        'product_id' => $product->id,
+        'product_id' => $this->selectedProduct,
     ]);
-
     $codigoBarras->save();
+
+    $this->emitirCodigosGenerados();
+}
+
+public function generarCodigos()
+{
+    $this->imagenesGeneradas = [];
+
+    for ($i = 0; $i < $this->cantidadCodigos; $i++) {
+        $this->generarCodigo();
+        $this->imagenesGeneradas[] = $this->codigoGenerado;
+    }
 }
 
     public function descargarCodigo()
@@ -162,6 +197,44 @@ class CodigoBarrasGenerator extends Component
     }
 }
 
+public function imprimirCodigosSecuencia()
+{
+    // Nombre de la impresora TSC TTP-244 Pro
+    $printerName = "TSC TTP-244 Pro";
+    
+    // Ruta de las imágenes que deseas imprimir en secuencia
+    $imagenesAImprimir = $this->imagenesGeneradas;
+
+    try {
+        // Conecta con la impresora
+        $connector = new WindowsPrintConnector($printerName);
+
+        foreach ($imagenesAImprimir as $imagenAImprimir) {
+            // Abre una nueva conexión para cada imagen
+            $printer = new Printer($connector);
+
+            // Carga la imagen desde los datos base64
+            $escposImage = EscposImage::load($imagenAImprimir);
+
+            // Imprime la imagen actual
+            $printer->graphics($escposImage);
+
+            // Corta el papel
+            $printer->cut();
+
+            // Cierra la conexión con la impresora
+            $printer->close();
+
+            // Espera un tiempo antes de imprimir la siguiente imagen (puedes ajustar el tiempo)
+            sleep(2); // Espera 2 segundos, por ejemplo
+        }
+
+        session()->flash('success', 'Imágenes impresas en secuencia en TSC TTP-244 Pro');
+    } catch (\Exception $e) {
+        session()->flash('error', 'Error al imprimir las imágenes: ' . $e->getMessage());
+    }
+}
+
 public function obtenerUltimoCodigoGenerado()
 {
     // Obten el ID del último código generado por el usuario autenticado
@@ -188,10 +261,16 @@ public function obtenerUltimoCodigoGenerado()
     
     return view('components.welcome', compact('codigosGenerados'));
 }
-    public function render()
-    {
-        $this->products = Product::all();
-        $codigosGenerados = $this->getCodigosGenerados();
-        return view('livewire.codigo-barras-generator');
-    }
+
+public function emitirCodigosGenerados()
+{
+    $this->emit('codigos-generados', $this->imagenesGeneradas);
+}
+
+public function render()
+{
+    $this->products = Product::all();
+    return view('livewire.codigo-barras-generator', ['imagenesGeneradas' => $this->imagenesGeneradas]);
+}
+
 }
