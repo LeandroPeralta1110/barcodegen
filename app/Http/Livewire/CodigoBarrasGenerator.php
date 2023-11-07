@@ -24,6 +24,8 @@ class CodigoBarrasGenerator extends Component
 {
     use WithFileUploads;
 
+    protected $listeners = ['codigoEscaneado' => 'generarCodigo'];
+    public $codigosGenerados;
     public $codigoGenerado;
     public $numeroCodigo;
     public $tipoCodigoBarras = 'C128';
@@ -31,17 +33,33 @@ class CodigoBarrasGenerator extends Component
     public $products;
     public $imagenesGeneradas;
     public $cantidadCodigos;
+    public $busqueda='';
+    public $generarCodigo;
+    public $scannedCode;
 
-public function generarCodigo()
+    public function generarCodigo($scannedCode = null)
 {
-    do {
-        $nuevoCodigo = $this->generateUniqueCode(); // Genera un nuevo código alfanumérico único
-    } while (CodigoBarras::where('codigo_barras', $nuevoCodigo)->exists());
-
-    $this->numeroCodigo = $nuevoCodigo;
+    if ($scannedCode !== null) {
+        
+        // El usuario ha escaneado un código de barras, usa el valor escaneado
+        $this->numeroCodigo = $scannedCode;
+    } else {
+        // El usuario no escaneó un código de barras, genera un nuevo código aleatorio
+        do {
+            $nuevoCodigo = $this->generateUniqueCode();
+        } while (CodigoBarras::where('codigo_barras', $nuevoCodigo)->exists());
+    
+        $this->numeroCodigo = $nuevoCodigo;
+    }
 
     // Genera el código de barras a partir del código alfanumérico
-    $this->generateBarcodeFromCode($nuevoCodigo);
+    $this->generateBarcodeFromCode($this->numeroCodigo);
+}
+
+public function enviarCodigoEscaneado($scannedCode)
+{
+    // Aquí puedes usar $this->scannedCode para acceder al código escaneado
+    $this->generarCodigo($scannedCode);
 }
 
 private function generateUniqueCode()
@@ -125,8 +143,6 @@ private function generateBarcodeFromCode($code)
         'product_id' => $this->selectedProduct,
     ]);
     $codigoBarras->save();
-
-    $this->emitirCodigosGenerados();
 }
 
 public function generarCodigos()
@@ -252,19 +268,23 @@ public function obtenerUltimoCodigoGenerado()
     }
 }
 
-
-    public function getCodigosGenerados()
+public function getCodigosGenerados()
 {
-    $codigosGenerados = CodigoBarras::where('usuario_id', auth()->id())
-        ->latest('created_at')
-        ->paginate(12); // Esto paginará los resultados en grupos de 15
-    
+    $query = CodigoBarras::where('usuario_id', auth()->id())
+        ->latest('created_at');
+
+        if (!empty($this->busqueda)) {
+            dd($this->busqueda);
+        $query->where('codigo_barras', 'like', '%' . $this->busqueda . '%');
+    }
+    $codigosGenerados = $query->paginate(12);
     return view('components.welcome', compact('codigosGenerados'));
 }
 
 public function emitirCodigosGenerados()
 {
     $this->emit('codigos-generados', $this->imagenesGeneradas);
+    $this->imprimirCodigosSecuencia();
 }
 
 public function render()
@@ -272,5 +292,4 @@ public function render()
     $this->products = Product::all();
     return view('livewire.codigo-barras-generator', ['imagenesGeneradas' => $this->imagenesGeneradas]);
 }
-
 }

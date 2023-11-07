@@ -53,6 +53,8 @@
         }
 
         document.addEventListener('livewire:load', function () {
+    let ventanaImpresion = null; // Declarar la variable ventanaImpresion fuera del evento
+
     Livewire.on('codigos-generados', function (imagenesGeneradas) {
         const imprimirCódigos = async (imagenes) => {
             // Crear una página HTML con una tabla que contiene las imágenes
@@ -76,8 +78,12 @@
                 </html>
             `;
 
+            if (ventanaImpresion) {
+                ventanaImpresion.close(); // Cerrar la ventana anterior si existe
+            }
+
             // Abrir una nueva ventana con la vista previa de impresión
-            const ventanaImpresion = window.open('', '', 'width=800,height=1000');
+            ventanaImpresion = window.open('', '', 'width=800,height=1000');
             ventanaImpresion.document.open();
             ventanaImpresion.document.write(vistaPrevia);
             ventanaImpresion.document.close();
@@ -100,7 +106,6 @@
         imprimirCódigos(imagenesGeneradas);
     });
 });
-
         </script>
     </body>
 </html>
