@@ -24,7 +24,7 @@ class CodigoBarrasGenerator extends Component
 {
     use WithFileUploads;
 
-    protected $listeners = ['codigoEscaneado' => 'generarCodigo'];
+    protected $listeners = ['codigoEscaneado' => 'enviarCodigoEscaneado'];
     public $codigosGenerados;
     public $codigoGenerado;
     public $numeroCodigo;
@@ -36,31 +36,67 @@ class CodigoBarrasGenerator extends Component
     public $busqueda='';
     public $generarCodigo;
     public $scannedCode;
+    public $page = 1;
+    public $mostrarMensaje = false;
+
 
     public function generarCodigo($scannedCode = null)
-{
-    if ($scannedCode !== null) {
-        
-        // El usuario ha escaneado un código de barras, usa el valor escaneado
-        $this->numeroCodigo = $scannedCode;
-    } else {
-        // El usuario no escaneó un código de barras, genera un nuevo código aleatorio
-        do {
-            $nuevoCodigo = $this->generateUniqueCode();
-        } while (CodigoBarras::where('codigo_barras', $nuevoCodigo)->exists());
+    {
+        if ($scannedCode !== null) {
+            // El usuario ha escaneado un código de barras, usa el valor escaneado
+            $this->numeroCodigo = $scannedCode;
     
-        $this->numeroCodigo = $nuevoCodigo;
+            // Inicializar variables para el código alfanumérico y numérico
+            $codigoAlfanumerico = '';
+            $numeroCodigoBarras = '';
+    
+            // Iterar sobre cada carácter en el código
+            $caracteres = str_split($this->numeroCodigo);
+    
+            foreach ($caracteres as $key => $caracterActual) {
+                // Verificar si el carácter actual es numérico
+                if (is_numeric($caracterActual)) {
+                    // Verificar los tres caracteres siguientes
+                    $siguientesTres = array_slice($caracteres, $key + 1, 3);
+    
+                    // Si son todos numéricos, cortar en el carácter actual
+                    if (count($siguientesTres) === 3 && ctype_digit(implode('', $siguientesTres))) {
+                        break;
+                    }
+    
+                    $codigoAlfanumerico .= $caracterActual;
+                } else {
+                    $codigoAlfanumerico .= $caracterActual;
+                }
+            }
+    
+            // Obtener el producto seleccionado o crear uno nuevo
+            $product = Product::firstOrCreate([
+                'descripcion' => $codigoAlfanumerico,
+                'nombre' => $codigoAlfanumerico,
+            ]);
+    
+            // Genera el código de barras a partir del código alfanumérico y el producto obtenido
+            $this->generateBarcodeFromCode($this->numeroCodigo, $product);
+        } else {
+            // El usuario no escaneó un código de barras, genera un nuevo código aleatorio
+            do {
+                $nuevoCodigo = $this->generateUniqueCode();
+            } while (CodigoBarras::where('codigo_barras', $nuevoCodigo)->exists());
+    
+            $this->numeroCodigo = $nuevoCodigo;
+            // Genera el código de barras a partir del código alfanumérico
+            $this->generateBarcodeFromCode($this->numeroCodigo);
+        }
+    }      
+    
+    public function enviarCodigoEscaneado($scannedCode)
+    {
+        
+        // Aquí puedes usar $this->scannedCode para acceder al código escaneado
+        $this->generarCodigo($scannedCode);
+        $this->scannedCode = '';
     }
-
-    // Genera el código de barras a partir del código alfanumérico
-    $this->generateBarcodeFromCode($this->numeroCodigo);
-}
-
-public function enviarCodigoEscaneado($scannedCode)
-{
-    // Aquí puedes usar $this->scannedCode para acceder al código escaneado
-    $this->generarCodigo($scannedCode);
-}
 
 private function generateUniqueCode()
 {
@@ -75,8 +111,32 @@ private function generateUniqueCode()
     return $codigoAlfanumerico;
 }
 
-private function generateBarcodeFromCode($code)
+private function generateBarcodeFromCode($code,$nombre=null)
 {
+     // Verificar si el código ya está registrado
+     if (CodigoBarras::where('codigo_barras', $code)->exists()) {
+        $this->mostrarMensaje = true;
+        return;
+    }
+
+    // Inicializar variables para el código alfanumérico y numérico
+    $codigoAlfanumerico = '';
+    $numeroCodigoBarras = '';
+
+    // Iterar sobre cada carácter en el código
+    for ($i = 0; $i < strlen($code); $i++) {
+        $caracterActual = $code[$i];
+
+        // Verificar si el carácter actual es numérico
+        if (is_numeric($caracterActual)) {
+            // Si es numérico, agrégalo al número del código de barras
+            $numeroCodigoBarras .= $caracterActual;
+        } else {
+            // Si no es numérico, significa que estamos en la parte alfanumérica
+            $codigoAlfanumerico .= $caracterActual;
+        }
+    }
+
     $generator = new BarcodeGeneratorPNG();
     $imgData = $generator->getBarcode($code, $this->tipoCodigoBarras);
     $img = imagecreatefromstring($imgData);
@@ -100,19 +160,30 @@ private function generateBarcodeFromCode($code)
     // Rellenar el fondo con blanco
     imagefilledrectangle($combinedImg, 0, 0, $anchoCodigo, $altoDeseado, $colorFondo);
 
-    // Obtener el producto seleccionado
-    $product = Product::find($this->selectedProduct);
-
+    if(!empty($nombre)){
+        // Obtener el producto seleccionado
+        $product = Product::find($nombre);
+    }else{
+        $product = Product::find($this->selectedProduct);
+    }
     // Crear un color negro para el texto
     $colorTexto = imagecolorallocate($combinedImg, 0, 0, 0);
 
     // Calcular la posición para el nombre del producto
     $font_size = 20; // Tamaño de fuente
-    $xNombreProducto = ($anchoCodigo - imagefontwidth($font_size) * strlen($product->nombre)) / 2;
+    if(!empty($nombre)){
+        $xNombreProducto = ($anchoCodigo - imagefontwidth($font_size) * strlen($product)) / 2;
+    }else{
+        $xNombreProducto = ($anchoCodigo - imagefontwidth($font_size) * strlen($product->nombre)) / 2;
+    }
     $yNombreProducto = 10; // Espacio desde la parte superior
 
-    // Agregar el nombre del producto como texto en la imagen combinada
-    imagestring($combinedImg, $font_size, $xNombreProducto, $yNombreProducto, $product->nombre, $colorTexto);
+    if(!empty($nombre)){
+        imagestring($combinedImg, $font_size, $xNombreProducto, $yNombreProducto, $product->first()->nombre, $colorTexto);
+    }else{
+        // Agregar el nombre del producto como texto en la imagen combinada
+        imagestring($combinedImg, $font_size, $xNombreProducto, $yNombreProducto, $product->nombre, $colorTexto);
+    }
 
     // Calcular la posición donde se copiará el código de barras en la imagen (centrado horizontalmente)
     $xCodigo = ($anchoCodigo - $anchoCodigo) / 2;
@@ -136,13 +207,29 @@ private function generateBarcodeFromCode($code)
 
     $this->codigoGenerado = $imagenCombinada;
 
+    if(!empty($nombre)){
+        $this->imagenesGeneradas[] = $this->codigoGenerado;
+    }
+
+    $product = Product::firstOrCreate(
+        ['descripcion' => $codigoAlfanumerico],
+        ['nombre' => $codigoAlfanumerico]
+    );
+
     // Guarda el código en la base de datos
     $codigoBarras = new CodigoBarras([
         'codigo_barras' => $code,
         'usuario_id' => auth()->id(),
-        'product_id' => $this->selectedProduct,
+        'product_id' =>($nombre)? $nombre->id: $this->selectedProduct,
     ]);
+
     $codigoBarras->save();
+}
+
+public function ocultarMensaje()
+{
+    $this->mostrarMensaje = false;
+    $this->emit('limpiarInput'); // Puedes emitir un evento si necesitas realizar alguna otra acción
 }
 
 public function generarCodigos()
@@ -268,23 +355,36 @@ public function obtenerUltimoCodigoGenerado()
     }
 }
 
+public function buscar()
+{
+    $this->resetPage(); // Reinicia la paginación al realizar una nueva búsqueda
+}
+
 public function getCodigosGenerados()
 {
     $query = CodigoBarras::where('usuario_id', auth()->id())
         ->latest('created_at');
 
-        if (!empty($this->busqueda)) {
-            dd($this->busqueda);
+    if (!empty($this->busqueda)) {
         $query->where('codigo_barras', 'like', '%' . $this->busqueda . '%');
     }
-    $codigosGenerados = $query->paginate(12);
-    return view('components.welcome', compact('codigosGenerados'));
+
+    $codigosGenerados = $query->paginate(12, ['*'], 'page', $this->page);
+   
+    return view('components.welcome', ['codigosGenerados' => $codigosGenerados]);
 }
 
 public function emitirCodigosGenerados()
 {
     $this->emit('codigos-generados', $this->imagenesGeneradas);
     $this->imprimirCodigosSecuencia();
+}
+
+public function updated($propertyName)
+{
+    if ($propertyName === 'scannedCode') {
+        $this->emit('limpiarInput');
+    }
 }
 
 public function render()

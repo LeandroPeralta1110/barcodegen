@@ -8,6 +8,7 @@ use App\Http\Controllers\ProductController;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
 use App\Http\Controllers\UserController;
+use App\Http\Livewire\Dashboard;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -30,8 +31,7 @@ Route::middleware([
 ])->group(function () {
     Route::get('/generar-codigo-barras', CodigoBarrasGenerator::class)->name('generar-codigo-barras');
     Route::get('/dashboard',)->name('generar-codigo-barras');
-    Route::get('/dashboard', [CodigoBarrasGenerator::class,'getCodigosGenerados'], function () {
-        return view('dashboard');
+    Route::get('/dashboard', Dashboard::class)->name('dashboard');
     })->name('dashboard');
     
     Route::middleware('can:create product')->group(function () {
@@ -43,5 +43,3 @@ Route::middleware([
         Route::resource('/users', App\Http\Controllers\UserController::class);
         Route::name('users.create')->get('/users/create', [UserController::class, 'create']);
     });
-});
-

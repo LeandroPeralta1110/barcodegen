@@ -3,8 +3,12 @@
         <div class="w-1/2 p-4">
             <h2>Códigos Generados por el Usuario</h2>
 
-            <input wire:model="busqueda" type="text" class="border rounded-md w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" placeholder="Buscar código de barras">
-            
+            <input wire:keydown.enter="buscar" 
+            wire:model="busqueda"
+            type="text" 
+            class="border rounded-md w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" 
+            placeholder="Buscar código de barras">
+                 
             <div class="overflow-x-auto">
                 <table class="min-w-full border-collapse border border-gray-300">
                     <thead>

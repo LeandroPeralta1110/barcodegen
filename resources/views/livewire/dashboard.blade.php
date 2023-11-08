@@ -1,9 +1,9 @@
-    <x-app-layout>
+
         <div class="p-6 lg:p-8 bg-white border-b border-gray-200">
             <div class="w-1/2 p-4">
                 <h2>Códigos Generados por el Usuario</h2>
     
-                <input wire:model="busqueda" type="text" wire:click="getCodigosGenerados" ...>
+                <input wire:model="busqueda" type="text" wire:click="getCodigosGenerados" placeholder="Buscar codigo">
                 
                 <div class="overflow-x-auto">
                     <table class="min-w-full border-collapse border border-gray-300">
@@ -31,4 +31,4 @@
                 </div>
             </div>
         </div>
-    </x-app-layout>
+ 
