@@ -8,6 +8,7 @@ use Livewire\Component;
 class Dashboard extends Component
 {
     protected $codigosGenerados = [];
+    protected $codigosGeneradosAdmin = [];
     public $busqueda;
     public $page;
 
@@ -28,6 +29,18 @@ class Dashboard extends Component
         $this->codigosGenerados = $query->paginate(12, ['*'], 'page', $this->page);
     }
 
+    public function getCodigosGeneradosAdmin()
+{
+    $query = CodigoBarras::with('usuario') // Cargar la relación 'usuario' para obtener información del usuario
+        ->latest('created_at');
+
+    if (!empty($this->busqueda)) {
+        $query->where('codigo_barras', 'like', '%' . $this->busqueda . '%');
+    }
+
+    $this->codigosGeneradosAdmin = $query->paginate(12, ['*'], 'page', $this->page);
+}
+
     public function getPropiedadCodigosGenerados()
     {
         return $this->codigosGenerados;
@@ -36,7 +49,8 @@ class Dashboard extends Component
     public function render()
     {
         $this->getCodigosGenerados(); // Llama a la función para obtener los códigos generados
-        return view('livewire.dashboard', ['codigosGenerados' => $this->codigosGenerados]);
+        $this->getCodigosGeneradosAdmin();
+        return view('livewire.dashboard', ['codigosGenerados' => $this->codigosGenerados, 'codigosGeneradosAdmin' => $this->codigosGeneradosAdmin]);
     }
     
 }

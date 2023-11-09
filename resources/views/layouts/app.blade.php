@@ -20,7 +20,7 @@
     <body class="font-sans antialiased">
         <x-banner />
 
-        <div class="min-h-screen bg-gray-100">
+        <div class="min-h-screen bg-gray-100  bg-cover bg-center bg-fixed imagenfondo">
             @livewire('navigation-menu')
 
             <!-- Page Heading -->
@@ -53,44 +53,39 @@
         }
 
         document.addEventListener('livewire:load', function () {
-    let ventanaImpresion = null; // Declarar la variable ventanaImpresion fuera del evento
+    let ventanaImpresion = null;
 
     Livewire.on('codigos-generados', function (imagenesGeneradas) {
         const imprimirCódigos = async (imagenes) => {
-            // Crear una página HTML con una tabla que contiene las imágenes
-            const vistaPrevia = `
-                <!DOCTYPE html>
-                <html>
-                <head>
-                    <title>Vista Previa de Impresión</title>
-                </head>
-                <body style="margin: 0; padding: 0;">
-                    <table style="width: 210mm; height: 297mm; border-collapse: collapse;">
-                        ${imagenes.map(imagen => `
-                            <tr>
-                                <td style="border: 1px solid #000; text-align: center; vertical-align: middle;">
-                                    <img src="${imagen}" style="max-width: 100%; max-height: 100%;" />
-                                </td>
-                            </tr>
-                        `).join('')}
-                    </table>
-                </body>
-                </html>
-            `;
+            const etiquetaWidth = 112; // Ancho de la etiqueta en milímetros
+            const etiquetaHeight = 50; // Longitud máxima de la etiqueta en milímetros
+            const dpi = 203; // Puntos por pulgada
+            const mmPerInch = 25.4; // Milímetros por pulgada
 
-            if (ventanaImpresion) {
-                ventanaImpresion.close(); // Cerrar la ventana anterior si existe
+            // Abre la ventana de impresión
+            ventanaImpresion = window.open('', '', `width=${etiquetaWidth * dpi / mmPerInch},height=${etiquetaHeight * dpi / mmPerInch}`);
+            ventanaImpresion.document.open();
+
+            // Muestra cada imagen en la ventana de impresión
+            for (const imagen of imagenes) {
+                const vistaPrevia = `
+                    <!DOCTYPE html>
+                    <html>
+                    <body style="margin: 0; padding: 0; width: ${etiquetaWidth}mm; height: ${etiquetaHeight}mm; page-break-before: always;">
+                        <img src="${imagen}" style="width: auto; height: ${etiquetaHeight}mm;" />
+                    </body>
+                    </html>
+                `;
+
+                ventanaImpresion.document.write(vistaPrevia);
+
+                // Espera un breve momento antes de pasar a la siguiente imagen
+                await new Promise(resolve => setTimeout(resolve, 1000));
             }
 
-            // Abrir una nueva ventana con la vista previa de impresión
-            ventanaImpresion = window.open('', '', 'width=800,height=1000');
-            ventanaImpresion.document.open();
-            ventanaImpresion.document.write(vistaPrevia);
             ventanaImpresion.document.close();
 
-            // Esperar un breve momento para asegurarse de que el contenido se cargue completamente
-            await new Promise(resolve => setTimeout(resolve, 1000));
-
+            // Imprime y cierra la ventana después de cargar todas las imágenes
             try {
                 ventanaImpresion.print();
                 ventanaImpresion.onafterprint = function () {
@@ -102,7 +97,6 @@
             }
         }
 
-        // Llama a la función para imprimir la vista previa de códigos generados
         imprimirCódigos(imagenesGeneradas);
     });
 });

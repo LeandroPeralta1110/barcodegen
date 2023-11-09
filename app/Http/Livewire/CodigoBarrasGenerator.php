@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Http\Livewire;
 
 use Livewire\Component;
@@ -220,7 +219,8 @@ private function generateBarcodeFromCode($code,$nombre=null)
     $codigoBarras = new CodigoBarras([
         'codigo_barras' => $code,
         'usuario_id' => auth()->id(),
-        'product_id' =>($nombre)? $nombre->id: $this->selectedProduct,
+        'product_id' => ($nombre) ? $nombre->id : $this->selectedProduct,
+        'created_at' => now('America/Argentina/Buenos_Aires'), // Agrega la zona horaria
     ]);
 
     $codigoBarras->save();
@@ -302,41 +302,44 @@ public function generarCodigos()
 
 public function imprimirCodigosSecuencia()
 {
-    // Nombre de la impresora TSC TTP-244 Pro
-    $printerName = "TSC TTP-244 Pro";
-    
-    // Ruta de las imágenes que deseas imprimir en secuencia
-    $imagenesAImprimir = $this->imagenesGeneradas;
+    // Cambia el nombre del puerto USB según tu configuración
+    $usbPortName = "usb://TSCTE200";
+
+    // Palabra que deseas imprimir en secuencia
+    $palabraAImprimir = "Prueba";
 
     try {
-        // Conecta con la impresora
-        $connector = new WindowsPrintConnector($printerName);
+        // Conecta con la impresora USB
+        $connector = new FilePrintConnector($usbPortName);
 
-        foreach ($imagenesAImprimir as $imagenAImprimir) {
-            // Abre una nueva conexión para cada imagen
-            $printer = new Printer($connector);
+        // Abre una nueva conexión para imprimir la palabra
+        $printer = new Printer($connector);
 
-            // Carga la imagen desde los datos base64
-            $escposImage = EscposImage::load($imagenAImprimir);
+        // Establece el tamaño y la posición del texto
+        $printer->setTextSize(2, 2);
+        $printer->setJustification(Printer::JUSTIFY_CENTER);
 
-            // Imprime la imagen actual
-            $printer->graphics($escposImage);
+        // Imprime la palabra
+        $printer->text($palabraAImprimir);
 
-            // Corta el papel
-            $printer->cut();
+        // Corta el papel
+        $printer->cut();
 
-            // Cierra la conexión con la impresora
-            $printer->close();
+        // Cierra la conexión con la impresora
+        $printer->close();
 
-            // Espera un tiempo antes de imprimir la siguiente imagen (puedes ajustar el tiempo)
-            sleep(2); // Espera 2 segundos, por ejemplo
-        }
+        // Espera un tiempo antes de imprimir la siguiente palabra (puedes ajustar el tiempo)
+        sleep(2); // Espera 2 segundos, por ejemplo
 
-        session()->flash('success', 'Imágenes impresas en secuencia en TSC TTP-244 Pro');
+        session()->flash('success', 'Palabra impresa en secuencia en TSC TTP-244 Pro');
     } catch (\Exception $e) {
-        session()->flash('error', 'Error al imprimir las imágenes: ' . $e->getMessage());
+        // Mensaje de depuración para errores
+        dd("Error: " . $e->getMessage());
+
+        session()->flash('error', 'Error al imprimir la palabra: ' . $e->getMessage());
     }
 }
+
 
 public function obtenerUltimoCodigoGenerado()
 {

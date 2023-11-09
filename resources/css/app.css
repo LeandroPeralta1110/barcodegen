@@ -39,3 +39,10 @@
     flex: 0 0 calc(33.333% - 10px); /* Tamaño de 3 imágenes en una fila con espaciado */
     position: relative;
 }
+
+.imagenfondo {
+  background-image: url("../../public/imagenes/hexagonfondo.jpg");
+  background-size: cover; /* O ajusta según tus necesidades */
+  background-position: center; /* O ajusta según tus necesidades */
+  background-repeat: no-repeat; /* O ajusta según tus necesidades */
+}
