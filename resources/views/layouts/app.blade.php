@@ -12,6 +12,8 @@
         <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
 
         <!-- Scripts -->
+        <script src="https://cdn.jsdelivr.net/npm/qz-tray@2.2.3/qz-tray.min.js"></script>        
+        
         @vite(['resources/css/app.css', 'resources/js/app.js'])
 
         <!-- Styles -->
@@ -42,38 +44,102 @@
 
         @livewireScripts
         <script>
-           function downloadBarcode() {
-            var element = document.querySelector('.codigo-barras-container');
-            html2canvas(element).then(function(canvas) {
-                var link = document.createElement('a');
-                link.download = 'codigo_barras.png';
-                link.href = canvas.toDataURL('image/png');
-                link.click();
-            });
-        }
+            function downloadBarcode() {
+                var element = document.querySelector('.codigo-barras-container');
+                html2canvas(element).then(function(canvas) {
+                    var link = document.createElement('a');
+                    link.download = 'codigo_barras.png';
+                    link.href = canvas.toDataURL('image/png');
+                    link.click();
+                });
+            }
+/* 
+            document.addEventListener('livewire:load', function () {
+        Livewire.on('imprimirDirecto', function (imagenesGeneradas) {
+            imprimirConQZTray(imagenesGeneradas);
+        });
 
-        document.addEventListener('livewire:load', function () {
+        Livewire.on('imprimirCodigosSecuencia', function (imagenesGeneradas) {
+            imprimirCodigosSecuenciaConQZTray(imagenesGeneradas);
+        });
+    }); */
+
+    /* function imprimirConQZTray(imagenesGeneradas) {
+        // Configuración de la impresora (ajusta según tus necesidades)
+        const configuracionImpresora = qz.configs.create(null);
+        configuracionImpresora.reconfigure({ copies: 1 });
+
+        // Recorre las imágenes generadas y las imprime una por una
+        imagenesGeneradas.forEach(function (imagenGenerada) {
+            const datosImpresion = [
+                qz.printing.newLine,
+                { type: 'image', format: 'base64', data: imagenGenerada, options: { language: 'epl' } },
+                qz.printing.newLine,
+            ];
+
+            // Imprime con QZ Tray
+            qz.printing.print(configuracionImpresora, datosImpresion);
+        });
+    }
+
+    function imprimirCodigosSecuenciaConQZTray(imagenesGeneradas) {
+        // Implementa la lógica para imprimir códigos secuencialmente aquí
+        // Puedes utilizar funciones como setTimeout para añadir un retraso entre las impresiones
+        // Ejemplo:
+        imagenesGeneradas.forEach(function (imagenGenerada, index) {
+            setTimeout(function () {
+                imprimirConQZTray([imagenGenerada]);
+            }, index * 2000); // Imprime cada código después de 2 segundos
+        });
+    } */
+
+    document.addEventListener('livewire:load', function () {
     let ventanaImpresion = null;
 
     Livewire.on('codigos-generados', function (imagenesGeneradas) {
-        const imprimirCódigos = async (imagenes) => {
-            const etiquetaWidth = 112; // Ancho de la etiqueta en milímetros
-            const etiquetaHeight = 50; // Longitud máxima de la etiqueta en milímetros
-            const dpi = 203; // Puntos por pulgada
-            const mmPerInch = 25.4; // Milímetros por pulgada
+        const imprimirCodigos = async (imagenes) => {
+            const etiquetaWidth = 70; // Ancho de la etiqueta en milímetros
+            const etiquetaHeight = 20; // Longitud máxima de la etiqueta en milímetros
 
             // Abre la ventana de impresión
-            ventanaImpresion = window.open('', '', `width=${etiquetaWidth * dpi / mmPerInch},height=${etiquetaHeight * dpi / mmPerInch}`);
+            ventanaImpresion = window.open('', '_blank');
             ventanaImpresion.document.open();
+
+            // Define el contenido CSS para asegurar el tamaño correcto en la impresión
+            const estiloCSS = `
+                <style>
+                    @media print {
+                        body {
+                            margin: 0;
+                            padding: 0;
+                            width: ${etiquetaWidth}mm;
+                            height: ${etiquetaHeight}mm;
+                            page-break-before: always; /* Nueva página para cada etiqueta */
+                            display: flex;
+                            justify-content: center;
+                            align-items: center;
+                        }
+                        img {
+                            max-width: 100%;
+                            max-height: 100%;
+                        }
+                        /* Oculta elementos no deseados durante la impresión */
+                        .horario, .autoblank {
+                            display: none !important;
+                        }
+                    }
+                </style>
+            `;
+
+            ventanaImpresion.document.write(estiloCSS);
 
             // Muestra cada imagen en la ventana de impresión
             for (const imagen of imagenes) {
                 const vistaPrevia = `
-                    <!DOCTYPE html>
                     <html>
-                    <body style="margin: 0; padding: 0; width: ${etiquetaWidth}mm; height: ${etiquetaHeight}mm; page-break-before: always;">
-                        <img src="${imagen}" style="width: auto; height: ${etiquetaHeight}mm;" />
-                    </body>
+                        <body>
+                            <img src="${imagen}" />
+                        </body>
                     </html>
                 `;
 
@@ -95,9 +161,12 @@
                 console.error('Error al imprimir la vista previa:', error);
                 ventanaImpresion.close();
             }
-        }
+        };
 
-        imprimirCódigos(imagenesGeneradas);
+        // Imprime los códigos solo si hay imágenes generadas
+        if (imagenesGeneradas && imagenesGeneradas.length > 0) {
+            imprimirCodigos(imagenesGeneradas);
+        }
     });
 });
         </script>

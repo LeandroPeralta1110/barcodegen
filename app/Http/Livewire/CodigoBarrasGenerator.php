@@ -91,7 +91,6 @@ class CodigoBarrasGenerator extends Component
     
     public function enviarCodigoEscaneado($scannedCode)
     {
-        
         // Aquí puedes usar $this->scannedCode para acceder al código escaneado
         $this->generarCodigo($scannedCode);
         $this->scannedCode = '';
@@ -110,10 +109,10 @@ private function generateUniqueCode()
     return $codigoAlfanumerico;
 }
 
-private function generateBarcodeFromCode($code,$nombre=null)
+private function generateBarcodeFromCode($code, $nombre = null)
 {
-     // Verificar si el código ya está registrado
-     if (CodigoBarras::where('codigo_barras', $code)->exists()) {
+    // Verificar si el código ya está registrado
+    if (CodigoBarras::where('codigo_barras', $code)->exists()) {
         $this->mostrarMensaje = true;
         return;
     }
@@ -136,6 +135,7 @@ private function generateBarcodeFromCode($code,$nombre=null)
         }
     }
 
+    // Crear el código de barras
     $generator = new BarcodeGeneratorPNG();
     $imgData = $generator->getBarcode($code, $this->tipoCodigoBarras);
     $img = imagecreatefromstring($imgData);
@@ -145,81 +145,68 @@ private function generateBarcodeFromCode($code,$nombre=null)
     $altoCodigo = imagesy($img);
 
     // Espaciado entre los números y el código de barras
-    $espaciadoNumeros = 10;
+    $espaciadoNumeros = 5; // Reducido el espaciado
 
-    // Aumentar el alto de la imagen para dar más espacio al número de código de barras
-    $altoDeseado = $altoCodigo + $espaciadoNumeros + 100; // Aumenta el espacio para el número
+    // Definir el tamaño deseado de la imagen del código de barras
+    $desiredWidth = 800; // Puedes ajustar este valor según tus necesidades
+    $desiredHeight = 200; // Reducido el alto de la imagen
 
-    // Crear la imagen combinada con el nuevo tamaño
-    $combinedImg = imagecreatetruecolor($anchoCodigo, $altoDeseado);
+    // Crear una nueva imagen con el tamaño deseado
+    $combinedImg = imagecreatetruecolor($desiredWidth, $desiredHeight);
 
     // Crear un color blanco para el fondo
     $colorFondo = imagecolorallocate($combinedImg, 255, 255, 255);
 
     // Rellenar el fondo con blanco
-    imagefilledrectangle($combinedImg, 0, 0, $anchoCodigo, $altoDeseado, $colorFondo);
+    imagefilledrectangle($combinedImg, 0, 0, $desiredWidth, $desiredHeight, $colorFondo);
 
-    if(!empty($nombre)){
-        // Obtener el producto seleccionado
-        $product = Product::find($nombre);
-    }else{
-        $product = Product::find($this->selectedProduct);
-    }
+    // Obtener el producto seleccionado
+    $product = (!empty($nombre)) ? Product::find($nombre) : Product::find($this->selectedProduct);
+
     // Crear un color negro para el texto
     $colorTexto = imagecolorallocate($combinedImg, 0, 0, 0);
 
     // Calcular la posición para el nombre del producto
     $font_size = 20; // Tamaño de fuente
-    if(!empty($nombre)){
-        $xNombreProducto = ($anchoCodigo - imagefontwidth($font_size) * strlen($product)) / 2;
-    }else{
-        $xNombreProducto = ($anchoCodigo - imagefontwidth($font_size) * strlen($product->nombre)) / 2;
-    }
-    $yNombreProducto = 10; // Espacio desde la parte superior
 
-    if(!empty($nombre)){
-        imagestring($combinedImg, $font_size, $xNombreProducto, $yNombreProducto, $product->first()->nombre, $colorTexto);
-    }else{
-        // Agregar el nombre del producto como texto en la imagen combinada
-        imagestring($combinedImg, $font_size, $xNombreProducto, $yNombreProducto, $product->nombre, $colorTexto);
-    }
+    $xNombreProducto = ($desiredWidth - imagefontwidth($font_size) * strlen($product->nombre)) / 2;
+    $yNombreProducto = 5; // Reducido el espacio desde la parte superior
 
-    // Calcular la posición donde se copiará el código de barras en la imagen (centrado horizontalmente)
-    $xCodigo = ($anchoCodigo - $anchoCodigo) / 2;
-    $yCodigo = $yNombreProducto + $font_size + $espaciadoNumeros; // Espacio entre el nombre y el código
+    // Agregar el nombre del producto como texto en la imagen combinada
+    imagestring($combinedImg, $font_size, $xNombreProducto, $yNombreProducto, $product->nombre, $colorTexto);
 
-    // Copiar el código de barras en la imagen combinada
-    imagecopy($combinedImg, $img, $xCodigo, $yCodigo, 0, 0, $anchoCodigo, $altoCodigo);
+    $xCodigo = ($desiredWidth - $anchoCodigo) / 2;
+    $yCodigo = $yNombreProducto + $font_size + $espaciadoNumeros; // Reducido el espacio entre el nombre y el código
+
+    // Rotar el código de barras antes de copiarlo en la imagen combinada
+    $imgRotated = imagerotate($img, 0, 0);
+    imagecopy($combinedImg, $imgRotated, $xCodigo, $yCodigo, 0, 0, $anchoCodigo, $altoCodigo);
 
     // Calcular la posición para el número de código de barras
-    $xNumero = ($anchoCodigo - imagefontwidth($font_size) * strlen($code)) / 2;
+    $xNumero = ($desiredWidth - imagefontwidth($font_size) * strlen($code)) / 2;
     $yNumero = $yCodigo + $altoCodigo + $espaciadoNumeros; // Espacio entre el código y el número
 
     // Agregar el número de código de barras como texto en la imagen combinada
     imagestring($combinedImg, $font_size, $xNumero, $yNumero, $code, $colorTexto);
 
-    // Generar la imagen combinada en tiempo real y mostrarla en la vista
+    // Genera la imagen combinada en tiempo real y muéstrala en la vista
     ob_start();
     imagepng($combinedImg);
     $imagenCombinada = 'data:image/png;base64,' . base64_encode(ob_get_clean());
     imagedestroy($combinedImg);
-
+    imagedestroy($img);
+    imagedestroy($imgRotated);  
     $this->codigoGenerado = $imagenCombinada;
 
-    if(!empty($nombre)){
+    if (!empty($nombre)) {
         $this->imagenesGeneradas[] = $this->codigoGenerado;
     }
-
-    $product = Product::firstOrCreate(
-        ['descripcion' => $codigoAlfanumerico],
-        ['nombre' => $codigoAlfanumerico]
-    );
 
     // Guarda el código en la base de datos
     $codigoBarras = new CodigoBarras([
         'codigo_barras' => $code,
         'usuario_id' => auth()->id(),
-        'product_id' => ($nombre) ? $nombre->id : $this->selectedProduct,
+        'product_id' => (!empty($nombre)) ? $nombre->id : $this->selectedProduct,
         'created_at' => now('America/Argentina/Buenos_Aires'), // Agrega la zona horaria
     ]);
 
@@ -237,9 +224,25 @@ public function generarCodigos()
     $this->imagenesGeneradas = [];
 
     for ($i = 0; $i < $this->cantidadCodigos; $i++) {
+        // Generar un nuevo código de barras
         $this->generarCodigo();
-        $this->imagenesGeneradas[] = $this->codigoGenerado;
+
+        // Verificar si se mostró el mensaje de código duplicado y salir del bucle si es necesario
+        if ($this->mostrarMensaje) {
+            break;
+        }
+
+        // Asegúrate de que $this->codigoGenerado no sea nulo antes de agregarlo al array
+        if (!is_null($this->codigoGenerado)) {
+            $this->imagenesGeneradas[] = $this->codigoGenerado;
+        }
+
+        // Limpiar el código generado para la próxima iteración
+        $this->codigoGenerado = null;
     }
+
+    /* // Emitir el evento después de haber generado todos los códigos
+    $this->emit('codigos-generados', $this->imagenesGeneradas); */
 }
 
     public function descargarCodigo()
@@ -302,44 +305,20 @@ public function generarCodigos()
 
 public function imprimirCodigosSecuencia()
 {
-    // Cambia el nombre del puerto USB según tu configuración
-    $usbPortName = "usb://TSCTE200";
-
-    // Palabra que deseas imprimir en secuencia
-    $palabraAImprimir = "Prueba";
-
-    try {
-        // Conecta con la impresora USB
-        $connector = new FilePrintConnector($usbPortName);
-
-        // Abre una nueva conexión para imprimir la palabra
-        $printer = new Printer($connector);
-
-        // Establece el tamaño y la posición del texto
-        $printer->setTextSize(2, 2);
-        $printer->setJustification(Printer::JUSTIFY_CENTER);
-
-        // Imprime la palabra
-        $printer->text($palabraAImprimir);
-
-        // Corta el papel
-        $printer->cut();
-
-        // Cierra la conexión con la impresora
-        $printer->close();
-
-        // Espera un tiempo antes de imprimir la siguiente palabra (puedes ajustar el tiempo)
-        sleep(2); // Espera 2 segundos, por ejemplo
-
-        session()->flash('success', 'Palabra impresa en secuencia en TSC TTP-244 Pro');
-    } catch (\Exception $e) {
-        // Mensaje de depuración para errores
-        dd("Error: " . $e->getMessage());
-
-        session()->flash('error', 'Error al imprimir la palabra: ' . $e->getMessage());
-    }
+    $nombreImpresora = "impresora-termica1";
+    $connector = new WindowsPrintConnector($nombreImpresora);
+    $impresora = new Printer($connector);
+    $impresora->setJustification(Printer::JUSTIFY_CENTER);
+    $impresora->setTextSize(2, 2);
+    $impresora->text("Imprimiendo\n");
+    $impresora->text("ticket\n");
+    $impresora->text("desde\n");
+    $impresora->text("Laravel\n");
+    $impresora->setTextSize(1, 1);
+    $impresora->text("https://parzibyte.me");
+    $impresora->feed(5);
+    $impresora->close();
 }
-
 
 public function obtenerUltimoCodigoGenerado()
 {

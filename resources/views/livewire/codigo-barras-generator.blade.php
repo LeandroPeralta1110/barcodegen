@@ -29,7 +29,7 @@
             </div>
             
             <div class="mb-4">
-                <button wire:click="generarCodigos" id="code" class="border border-gray-300 rounded p-2 w-full">Generar Código de Barras</button>
+                <button wire:click="generarCodigos" class="border border-gray-300 rounded p-2 w-full">Generar Código de Barras</button>
             </div>
             
             <div class="mb-4">
@@ -51,7 +51,7 @@
             <div class="bg-white border border-gray-300 p-4 rounded-md">
                 <div id="display" class="flex flex-col items-center">
                     @if($imagenesGeneradas)
-                    <button wire:click="imprimirCodigosSecuencia" id="emitirCodigos" class="border border-gray-300 rounded p-2 w-full mt-4">Imprimir Códigos Secuencialmente</button>
+                    <button wire:click="imprimirCodigosSecuencia" class="border border-gray-300 rounded p-2 w-full mt-4">Imprimir Códigos Secuencialmente</button>
                         <div id="field" style="width: auto;">
                             <div class="grid grid-cols-2 gap-4">
                                 @foreach ($imagenesGeneradas as $imagenGenerada)
