@@ -52,12 +52,17 @@
                 <div id="display" class="flex flex-col items-center">
                     @if($imagenesGeneradas)
                     <button wire:click="imprimirCodigosSecuencia" class="border border-gray-300 rounded p-2 w-full mt-4">Imprimir Códigos Secuencialmente</button>
+                    @if ($codigo && !$codigo->impresion)
+                    <button wire:click="marcarTodosComoImpreso" wire:loading.attr="disabled" class="mt-2 bg-green-500 text-white py-1 px-2 rounded">Marcar Todos como Impresos</button>
+                    @else
+                    <span class="mt-2 bg-gray-300 text-gray-600 py-1 px-2 rounded">Impreso</span>
+                    @endif
                         <div id="field" style="width: auto;">
                             <div class="grid grid-cols-2 gap-4">
                                 @foreach ($imagenesGeneradas as $imagenGenerada)
-                                    <div class="p-2">
-                                        <img src="{{ $imagenGenerada }}" alt="Código de barras" style="width: 100%; height: auto;" />
-                                    </div>
+                                <div class="p-2">
+                                    <img src="{{ $imagenGenerada }}" alt="Código de barras" style="width: 100%; height: auto;" />
+                                </div>
                                 @endforeach
                             </div>
                         </div>
@@ -89,6 +94,10 @@
     // Almacena las imágenes generadas en una variable JavaScript
     window.imagenesGeneradas = @json($imagenesGeneradas);
 
+    /* Livewire.on('marcarComoImpreso', codigoBarrasId => {
+        @this.marcarComoImpreso(codigoBarrasId);
+    });
+ */
     /* // Almacena el código acumulado
     Livewire.emit('codigoEscaneado', (scannedCode) => {
         @this.call('enviarCodigoEscaneado', scannedCode);

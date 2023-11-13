@@ -37,6 +37,7 @@ class CodigoBarrasGenerator extends Component
     public $scannedCode;
     public $page = 1;
     public $mostrarMensaje = false;
+    public $codigoBarrasId;
 
 
     public function generarCodigo($scannedCode = null)
@@ -117,6 +118,9 @@ private function generateBarcodeFromCode($code, $nombre = null)
         return;
     }
 
+    /* CodigoBarras::where('product_id', $this->selectedProduct)
+        ->update(['impresion' => true]); */
+
     // Inicializar variables para el código alfanumérico y numérico
     $codigoAlfanumerico = '';
     $numeroCodigoBarras = '';
@@ -135,7 +139,6 @@ private function generateBarcodeFromCode($code, $nombre = null)
         }
     }
 
-    // Crear el código de barras
     $generator = new BarcodeGeneratorPNG();
     $imgData = $generator->getBarcode($code, $this->tipoCodigoBarras);
     $img = imagecreatefromstring($imgData);
@@ -145,23 +148,26 @@ private function generateBarcodeFromCode($code, $nombre = null)
     $altoCodigo = imagesy($img);
 
     // Espaciado entre los números y el código de barras
-    $espaciadoNumeros = 5; // Reducido el espaciado
+    $espaciadoNumeros = 10;
 
-    // Definir el tamaño deseado de la imagen del código de barras
-    $desiredWidth = 800; // Puedes ajustar este valor según tus necesidades
-    $desiredHeight = 200; // Reducido el alto de la imagen
+    // Aumentar el alto de la imagen para dar más espacio al número de código de barras
+    $altoDeseado = $altoCodigo + $espaciadoNumeros + 100; // Aumenta el espacio para el número
 
-    // Crear una nueva imagen con el tamaño deseado
-    $combinedImg = imagecreatetruecolor($desiredWidth, $desiredHeight);
+    // Crear la imagen combinada con el nuevo tamaño
+    $combinedImg = imagecreatetruecolor($anchoCodigo, $altoDeseado);
 
     // Crear un color blanco para el fondo
     $colorFondo = imagecolorallocate($combinedImg, 255, 255, 255);
 
     // Rellenar el fondo con blanco
-    imagefilledrectangle($combinedImg, 0, 0, $desiredWidth, $desiredHeight, $colorFondo);
+    imagefilledrectangle($combinedImg, 0, 0, $anchoCodigo, $altoDeseado, $colorFondo);
 
-    // Obtener el producto seleccionado
-    $product = (!empty($nombre)) ? Product::find($nombre) : Product::find($this->selectedProduct);
+    if (!empty($nombre)) {
+        // Obtener el producto seleccionado
+        $product = Product::find($nombre);
+    } else {
+        $product = Product::find($this->selectedProduct);
+    }
 
     // Crear un color negro para el texto
     $colorTexto = imagecolorallocate($combinedImg, 0, 0, 0);
@@ -169,47 +175,72 @@ private function generateBarcodeFromCode($code, $nombre = null)
     // Calcular la posición para el nombre del producto
     $font_size = 20; // Tamaño de fuente
 
-    $xNombreProducto = ($desiredWidth - imagefontwidth($font_size) * strlen($product->nombre)) / 2;
-    $yNombreProducto = 5; // Reducido el espacio desde la parte superior
+    if (!empty($nombre)) {
+        $xNombreProducto = ($anchoCodigo - imagefontwidth($font_size) * strlen($product)) / 2;
+    } else {
+        $xNombreProducto = ($anchoCodigo - imagefontwidth($font_size) * strlen($product->nombre)) / 2;
+    }
 
-    // Agregar el nombre del producto como texto en la imagen combinada
-    imagestring($combinedImg, $font_size, $xNombreProducto, $yNombreProducto, $product->nombre, $colorTexto);
+    $yNombreProducto = 10; // Espacio desde la parte superior
 
-    $xCodigo = ($desiredWidth - $anchoCodigo) / 2;
-    $yCodigo = $yNombreProducto + $font_size + $espaciadoNumeros; // Reducido el espacio entre el nombre y el código
+    if (!empty($nombre)) {
+        imagestring($combinedImg, $font_size, $xNombreProducto, $yNombreProducto, $product->first()->nombre, $colorTexto);
+    } else {
+        // Agregar el nombre del producto como texto en la imagen combinada
+        imagestring($combinedImg, $font_size, $xNombreProducto, $yNombreProducto, $product->nombre, $colorTexto);
+    }
 
-    // Rotar el código de barras antes de copiarlo en la imagen combinada
-    $imgRotated = imagerotate($img, 0, 0);
-    imagecopy($combinedImg, $imgRotated, $xCodigo, $yCodigo, 0, 0, $anchoCodigo, $altoCodigo);
+    // Calcular la posición donde se copiará el código de barras en la imagen (centrado horizontalmente)
+    $xCodigo = ($anchoCodigo - $anchoCodigo) / 2;
+    $yCodigo = $yNombreProducto + $font_size + $espaciadoNumeros; // Espacio entre el nombre y el código
+
+    // Copiar el código de barras en la imagen combinada
+    imagecopy($combinedImg, $img, $xCodigo, $yCodigo, 0, 0, $anchoCodigo, $altoCodigo);
 
     // Calcular la posición para el número de código de barras
-    $xNumero = ($desiredWidth - imagefontwidth($font_size) * strlen($code)) / 2;
+    $xNumero = ($anchoCodigo - imagefontwidth($font_size) * strlen($code)) / 2;
     $yNumero = $yCodigo + $altoCodigo + $espaciadoNumeros; // Espacio entre el código y el número
 
     // Agregar el número de código de barras como texto en la imagen combinada
     imagestring($combinedImg, $font_size, $xNumero, $yNumero, $code, $colorTexto);
 
-    // Genera la imagen combinada en tiempo real y muéstrala en la vista
+    // Definir la variable $mmPerInch
+    $mmPerInch = 25.4;
+
+    // Nuevos valores para el ancho y alto deseados
+    $etiquetaWidth = 75; // Ancho de la etiqueta en milímetros
+    $etiquetaHeight = 26; // Longitud máxima de la etiqueta en milímetros
+    // Definir la variable $dpi
+    $dpi = 203; // Puntos por pulgada
+
+    // Calcula el nuevo ancho y alto del código de barras para que quepa en la etiqueta
+    $newWidth = ($etiquetaWidth / $mmPerInch) * $dpi;
+    $newHeight = ($etiquetaHeight / $mmPerInch) * $dpi;
+
+    // Redimensiona la imagen del código de barras
+    $combinedImg = imagescale($combinedImg, $newWidth, $newHeight);
+
     ob_start();
     imagepng($combinedImg);
-    $imagenCombinada = 'data:image/png;base64,' . base64_encode(ob_get_clean());
+    $imgData = ob_get_clean(); // Obtén los datos de la imagen en formato binario
     imagedestroy($combinedImg);
     imagedestroy($img);
-    imagedestroy($imgRotated);  
-    $this->codigoGenerado = $imagenCombinada;
+
+    $this->codigoGenerado = 'data:image/png;base64,' . base64_encode($imgData);
 
     if (!empty($nombre)) {
         $this->imagenesGeneradas[] = $this->codigoGenerado;
     }
 
-    // Guarda el código en la base de datos
-    $codigoBarras = new CodigoBarras([
+     // Guarda el código y la imagen en la base de datos
+     $codigoBarras = new CodigoBarras([
         'codigo_barras' => $code,
         'usuario_id' => auth()->id(),
         'product_id' => (!empty($nombre)) ? $nombre->id : $this->selectedProduct,
-        'created_at' => now('America/Argentina/Buenos_Aires'), // Agrega la zona horaria
+        'imagen_codigo_barras' => $this->codigoGenerado,
+        'impresion' => false, // Establecer el valor por defecto como false
+        'created_at' => now('America/Argentina/Buenos_Aires'),
     ]);
-
     $codigoBarras->save();
 }
 
@@ -242,7 +273,7 @@ public function generarCodigos()
     }
 
     /* // Emitir el evento después de haber generado todos los códigos
-    $this->emit('codigos-generados', $this->imagenesGeneradas); */
+    $this->emitirCodigosGenerados(); */
 }
 
     public function descargarCodigo()
@@ -303,6 +334,26 @@ public function generarCodigos()
     }
 }
 
+public function marcarTodosComoImpreso()
+{
+    // Obtener la cantidad de códigos que el usuario quiere generar
+    $cantidadCodigos = $this->cantidadCodigos;
+
+    // Obtener los últimos códigos generados por el usuario
+    $ultimosCodigos = CodigoBarras::where('usuario_id', Auth::id())
+        ->latest('created_at')
+        ->take($cantidadCodigos)
+        ->get();
+
+    // Marcar cada código como impreso
+    foreach ($ultimosCodigos as $codigo) {
+        if (!$codigo->impresion) {
+            $codigo->impresion = true;
+            $codigo->save();
+        }
+    }
+}
+
 public function imprimirCodigosSecuencia()
 {
     $nombreImpresora = "impresora-termica1";
@@ -322,19 +373,12 @@ public function imprimirCodigosSecuencia()
 
 public function obtenerUltimoCodigoGenerado()
 {
-    // Obten el ID del último código generado por el usuario autenticado
+    // Obten el último código generado por el usuario autenticado
     $ultimoCodigo = CodigoBarras::where('usuario_id', Auth::id())
         ->latest('created_at') // Ordena los registros por la columna 'created_at' en orden descendente
         ->first(); // Obtiene el primer registro después de aplicar el ordenamiento
 
-    if ($ultimoCodigo) {
-        $idUltimoCodigo = $ultimoCodigo->id;
-        // Ahora tienes el ID del último código generado por el usuario autenticado
-        return $idUltimoCodigo;
-    } else {
-        // No se encontraron códigos generados por el usuario
-        return null;
-    }
+    return $ultimoCodigo;
 }
 
 public function buscar()
@@ -358,8 +402,20 @@ public function getCodigosGenerados()
 
 public function emitirCodigosGenerados()
 {
-    $this->emit('codigos-generados', $this->imagenesGeneradas);
-    $this->imprimirCodigosSecuencia();
+   /*  $this->emit('codigos-generados', $this->imagenesGeneradas); */
+    // Marcar como impreso después de emitir los códigos generados
+    $this->marcarComoImpresoParaGenerados();
+}
+
+public function marcarComoImpresoParaGenerados()
+{
+    // Obtén los IDs de los códigos de barras generados
+    $idsGenerados = CodigoBarras::whereIn('imagen_codigo_barras', $this->imagenesGeneradas)
+        ->pluck('id');
+
+    // Marcar los códigos de barras como impresos
+    CodigoBarras::whereIn('id', $idsGenerados)
+        ->update(['impresion' => true]);
 }
 
 public function updated($propertyName)
@@ -372,6 +428,10 @@ public function updated($propertyName)
 public function render()
 {
     $this->products = Product::all();
-    return view('livewire.codigo-barras-generator', ['imagenesGeneradas' => $this->imagenesGeneradas]);
+    $ultimoCodigoGenerado = $this->obtenerUltimoCodigoGenerado(); // Agregado
+    return view('livewire.codigo-barras-generator', [
+        'imagenesGeneradas' => $this->imagenesGeneradas,
+        'codigo' => $ultimoCodigoGenerado, // Agregado
+    ]);
 }
 }

@@ -13,6 +13,8 @@ class CreateCodigosBarrasTable extends Migration
         $table->string('codigo_barras')->unique();
         $table->unsignedBigInteger('usuario_id');
         $table->unsignedBigInteger('product_id');
+        $table->binary('imagen_codigo_barras');
+        $table->boolean('impresion')->default(false);
         $table->timestamps();
 
         $table->foreign('usuario_id')->references('id')->on('users');
