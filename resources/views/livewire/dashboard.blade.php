@@ -20,7 +20,7 @@
                     @foreach ($codigosGenerados as $codigoGenerado)
                         <tr>
                             <td class="border border-gray-300 py-2 px-4">{{ $codigoGenerado->codigo_barras }}</td>
-                            <td class="border border-gray-300 py-2 px-4">{{ $codigoGenerado->created_at }}</td>
+                            <td class="border border-gray-300 py-2 px-4">{{ \Carbon\Carbon::parse($codigoGenerado->created_at)->format('d/m/Y H:i:s') }}</td>
                         </tr>
                     @endforeach
                     @endrole
@@ -28,8 +28,7 @@
                     @foreach ($codigosGeneradosAdmin as $codigoGenerado)
                     <tr>
                         <td class="border border-gray-300 py-2 px-4">{{ $codigoGenerado->codigo_barras }}</td>
-                        <td class="border border-gray-300 py-2 px-4">{{ $codigoGenerado->created_at }}</td>
-                        <td class="border border-gray-300 py-2 px-4">{{ $codigoGenerado->usuario->name }}</td>
+                        <td class="border border-gray-300 py-2 px-4">{{ \Carbon\Carbon::parse($codigoGenerado->created_at)->format('d/m/Y H:i:s') }}</td>
                     </tr>
                     @endforeach
                     @endrole

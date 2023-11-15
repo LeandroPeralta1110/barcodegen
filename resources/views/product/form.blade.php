@@ -6,14 +6,11 @@
             {{ Form::text('nombre', $product->nombre, ['class' => 'form-control' . ($errors->has('nombre') ? ' is-invalid' : ''), 'placeholder' => 'Nombre']) }}
             {!! $errors->first('nombre', '<div class="invalid-feedback">:message</div>') !!}
         </div>
-        <div class="form-group">
+        <div class="form-group mt-3">
             {{ Form::label('descripcion') }}
             {{ Form::text('descripcion', $product->descripcion, ['class' => 'form-control' . ($errors->has('descripcion') ? ' is-invalid' : ''), 'placeholder' => 'Descripcion']) }}
             {!! $errors->first('descripcion', '<div class="invalid-feedback">:message</div>') !!}
         </div>
 
-    </div>
-    <div class="box-footer mt20">
-        <button type="submit" class="btn btn-primary">{{ __('Submit') }}</button>
     </div>
 </div>
