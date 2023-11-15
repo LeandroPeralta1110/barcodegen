@@ -51,7 +51,6 @@
             <div class="bg-white border border-gray-300 p-4 rounded-md">
                 <div id="display" class="flex flex-col items-center">
                     @if($imagenesGeneradas)
-                    <button wire:click="imprimirCodigosSecuencia" class="border border-gray-300 rounded p-2 w-full mt-4">Imprimir Códigos Secuencialmente</button>
                     @if ($codigo && !$codigo->impresion)
                     <button wire:click="marcarTodosComoImpreso" wire:loading.attr="disabled" class="mt-2 bg-green-500 text-white py-1 px-2 rounded">Marcar Todos como Impresos</button>
                     @else
