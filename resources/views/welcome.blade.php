@@ -39,7 +39,7 @@
             <div class="max-w-6xl mx-auto sm:px-6 lg:px-8">
                 <h1>Sistema Administrador de Códigos de Barras</h1>
                 <h1 style="text-align: center; color: #1a73e8;">MixCodex</h1>
-            </div>                                  
+            </div>                                 
         </div>
     </body>
 </html>

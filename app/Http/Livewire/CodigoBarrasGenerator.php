@@ -23,7 +23,7 @@ class CodigoBarrasGenerator extends Component
 {
     use WithFileUploads;
 
-    protected $listeners = ['codigoEscaneado' => 'enviarCodigoEscaneado'];
+    protected $listeners = ['actualizarEntradaManual' => 'actualizarEntradaManual'];
     public $codigosGenerados;
     public $codigoGenerado;
     public $numeroCodigo;
@@ -38,64 +38,105 @@ class CodigoBarrasGenerator extends Component
     public $page = 1;
     public $mostrarMensaje = false;
     public $codigoBarrasId;
+    public $mostrarPopup = false;
+    public $enviarAutomaticamente = true;
+    public $esEntradaManual = false;
+    public $entradaManual = false;
+    public $alfanumerico;
+    public $nuevoProductoNombre;
+    public $nuevoProductoDescripcion;
+    public $mostrarFormularioNuevoProducto = false;
+    public $esperandoDecisionUsuario = true;
 
 
     public function generarCodigo($scannedCode = null)
-    {
-        if ($scannedCode !== null) {
-            // El usuario ha escaneado un código de barras, usa el valor escaneado
-            $this->numeroCodigo = $scannedCode;
-    
-            // Inicializar variables para el código alfanumérico y numérico
-            $codigoAlfanumerico = '';
-            $numeroCodigoBarras = '';
-    
-            // Iterar sobre cada carácter en el código
-            $caracteres = str_split($this->numeroCodigo);
-    
-            foreach ($caracteres as $key => $caracterActual) {
-                // Verificar si el carácter actual es numérico
-                if (is_numeric($caracterActual)) {
-                    // Verificar los tres caracteres siguientes
-                    $siguientesTres = array_slice($caracteres, $key + 1, 3);
-    
-                    // Si son todos numéricos, cortar en el carácter actual
-                    if (count($siguientesTres) === 3 && ctype_digit(implode('', $siguientesTres))) {
-                        break;
-                    }
-    
-                    $codigoAlfanumerico .= $caracterActual;
-                } else {
-                    $codigoAlfanumerico .= $caracterActual;
-                }
-            }
-    
-            // Obtener el producto seleccionado o crear uno nuevo
-            $product = Product::firstOrCreate([
-                'descripcion' => $codigoAlfanumerico,
-                'nombre' => $codigoAlfanumerico,
-            ]);
-    
-            // Genera el código de barras a partir del código alfanumérico y el producto obtenido
-            $this->generateBarcodeFromCode($this->numeroCodigo, $product);
-        } else {
-            // El usuario no escaneó un código de barras, genera un nuevo código aleatorio
-            do {
-                $nuevoCodigo = $this->generateUniqueCode();
-            } while (CodigoBarras::where('codigo_barras', $nuevoCodigo)->exists());
-    
-            $this->numeroCodigo = $nuevoCodigo;
-            // Genera el código de barras a partir del código alfanumérico
-            $this->generateBarcodeFromCode($this->numeroCodigo);
-        }
-    }      
-    
-    public function enviarCodigoEscaneado($scannedCode)
-    {
-        // Aquí puedes usar $this->scannedCode para acceder al código escaneado
-        $this->generarCodigo($scannedCode);
-        $this->scannedCode = '';
+{
+    if($this->esEntradaManual){
+        return;
     }
+
+    if ($scannedCode !== null) {
+        $this->entradaManual = true;
+        $this->mostrarFormularioNuevoProducto = true;
+        $this->mostrarPopup();
+        $this->esperandoDecisionUsuario = true;
+        // El usuario ha escaneado un código de barras, usa el valor escaneado
+        $this->numeroCodigo = $scannedCode;
+
+        // Inicializar variables para el código alfanumérico y numérico
+        $codigoAlfanumerico = '';
+        $numeroCodigoBarras = '';
+
+        // Iterar sobre cada carácter en el código
+        $caracteres = str_split($this->numeroCodigo);
+
+        foreach ($caracteres as $key => $caracterActual) {
+            // Verificar si el carácter actual es numérico
+            if (is_numeric($caracterActual)) {
+                // Verificar los tres caracteres siguientes
+                $siguientesTres = array_slice($caracteres, $key + 1, 3);
+                // Si son todos numéricos, cortar en el carácter actual
+                if (count($siguientesTres) === 3 && ctype_digit(implode('', $siguientesTres))) {
+                    break;
+                }
+                $codigoAlfanumerico .= $caracterActual;
+            } else {
+                $codigoAlfanumerico .= $caracterActual;
+            }
+        }
+
+    $this->alfanumerico =  $codigoAlfanumerico;
+
+    // Obtener el producto seleccionado o crear uno nuevo
+    $product = Product::firstOrCreate([
+        'descripcion' => $codigoAlfanumerico,
+        'nombre' => $codigoAlfanumerico,
+        ]);
+
+        // Genera el código de barras a partir del código alfanumérico y el producto obtenido
+        $this->generateBarcodeFromCode($this->numeroCodigo, $product);
+    } else {
+        // El usuario no escaneó un código de barras, genera un nuevo código aleatorio
+        do {
+            $nuevoCodigo = $this->generateUniqueCode();
+        } while (CodigoBarras::where('codigo_barras', $nuevoCodigo)->exists());
+
+        $this->numeroCodigo = $nuevoCodigo;
+        // Genera el código de barras a partir del código alfanumérico
+        $this->generateBarcodeFromCode($this->numeroCodigo);
+    }
+}
+    
+public function enviarCodigoEscaneado()
+{
+    // Restablecer la bandera después de procesar el código
+    if (!$this->esEntradaManual && $this->esperandoDecisionUsuario) {
+        // Procesa el código escaneado automáticamente solo si no es una entrada manual
+        $this->generarCodigo($this->scannedCode);
+    }
+    $this->scannedCode = '';
+}
+
+public function guardarNuevoProducto()
+{
+    // Validar la entrada del usuario si es necesario
+
+    // Crear un nuevo producto
+    $nuevoProducto = Product::create([
+        'nombre' => $this->nuevoProductoNombre,
+        'descripcion' => $this->nuevoProductoDescripcion,
+    ]);
+
+    // Usar el código introducido manualmente en lugar del escaneado
+    $this->generateBarcodeFromCode($this->numeroCodigo, $nuevoProducto);
+
+    // Indicar que ya no estamos esperando la decisión del usuario
+    $this->esperandoDecisionUsuario = false;
+
+    // Cerrar el formulario
+    $this->mostrarFormularioNuevoProducto = false;
+    $this->ocultarPopup();
+}
 
 private function generateUniqueCode()
 {
@@ -140,7 +181,12 @@ private function generateBarcodeFromCode($code, $nombre = null)
     }
 
     $generator = new BarcodeGeneratorPNG();
-    $imgData = $generator->getBarcode($code, $this->tipoCodigoBarras);
+    if(empty($code)){
+        $imgData = $generator->getBarcode('C128', $this->tipoCodigoBarras);
+    }else{
+        
+        $imgData = $generator->getBarcode($code, $this->tipoCodigoBarras);
+    }
     $img = imagecreatefromstring($imgData);
 
     // Calcular el ancho y alto de la imagen del código de barras
@@ -354,6 +400,12 @@ public function marcarTodosComoImpreso()
     }
 }
 
+public function actualizarEntradaManual($valor)
+{
+    $this->esEntradaManual = $valor;
+    $this->enviarCodigoEscaneado();
+}
+
 public function imprimirCodigosSecuencia()
 {
     $nombreImpresora = "impresora-termica1";
@@ -418,11 +470,14 @@ public function marcarComoImpresoParaGenerados()
         ->update(['impresion' => true]);
 }
 
-public function updated($propertyName)
+public function mostrarPopup()
 {
-    if ($propertyName === 'scannedCode') {
-        $this->emit('limpiarInput');
-    }
+    $this->mostrarPopup = true;
+}
+
+public function ocultarPopup()
+{
+    $this->mostrarPopup = false;
 }
 
 public function render()

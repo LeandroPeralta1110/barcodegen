@@ -29,7 +29,7 @@
                     <tr>
                         <td class="border border-gray-300 py-2 px-4">{{ $codigoGenerado->codigo_barras }}</td>
                         <td class="border border-gray-300 py-2 px-4">{{ \Carbon\Carbon::parse($codigoGenerado->created_at)->format('d/m/Y H:i:s') }}</td>
-                    </tr>
+                        <td class="border border-gray-300 py-2 px-4">{{ $codigoGenerado->usuario->name }}</td>                    </tr>
                     @endforeach
                     @endrole
                 </tbody>
