@@ -31,7 +31,7 @@ class Dashboard extends Component
 
     public function getCodigosGeneradosAdmin()
 {
-    $query = CodigoBarras::with('usuario') // Cargar la relación 'usuario' para obtener información del usuario
+    $query = CodigoBarras::with(['usuario', 'product']) // Cargar las relaciones 'usuario' y 'producto'
         ->latest('created_at');
 
     if (!empty($this->busqueda)) {

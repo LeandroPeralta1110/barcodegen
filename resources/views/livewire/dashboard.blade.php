@@ -12,6 +12,7 @@
                         <th class="border border-gray-300 py-2 px-4 bg-gray-100">Fecha de Generación</th>
                         @role('administrador')
                         <th class="border border-gray-300 py-2 px-4 bg-gray-100">Usuario</th>
+                        <th class="border border-gray-300 py-2 px-4 bg-gray-100">Producto Vinculado</th>
                         @endrole
                     </tr>
                 </thead>
@@ -29,13 +30,14 @@
                     <tr>
                         <td class="border border-gray-300 py-2 px-4">{{ $codigoGenerado->codigo_barras }}</td>
                         <td class="border border-gray-300 py-2 px-4">{{ \Carbon\Carbon::parse($codigoGenerado->created_at)->format('d/m/Y H:i:s') }}</td>
-                        <td class="border border-gray-300 py-2 px-4">{{ $codigoGenerado->usuario->name }}</td>                    </tr>
+                        <td class="border border-gray-300 py-2 px-4">{{ $codigoGenerado->usuario->name }}</td>
+                        <td class="border border-gray-300 py-2 px-4">{{ $codigoGenerado->product->nombre }}</td>
+                    </tr>
                     @endforeach
                     @endrole
                 </tbody>
             </table>
         </div>
-
         <div class="mt-4">
             {{ $codigosGenerados->links() }} <!-- Muestra los enlaces de paginación debajo de la tabla -->
         </div>
