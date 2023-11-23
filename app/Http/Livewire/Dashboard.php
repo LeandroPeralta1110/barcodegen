@@ -2,6 +2,7 @@
 
 namespace App\Http\Livewire;
 use App\Models\CodigoBarras;
+use App\Models\Product;
 
 use Livewire\Component;
 
@@ -18,18 +19,18 @@ class Dashboard extends Component
     }
     
     public function getCodigosGenerados()
-    {
-        $query = CodigoBarras::where('usuario_id', auth()->id())
-            ->latest('created_at');
-    
-        if (!empty($this->busqueda)) {
-            $query->where('codigo_barras', 'like', '%' . $this->busqueda . '%');
-        }
-    
-        $this->codigosGenerados = $query->paginate(12, ['*'], 'page', $this->page);
+{
+    $query = CodigoBarras::where('usuario_id', auth()->id())
+        ->latest('created_at');
+
+    if (!empty($this->busqueda)) {
+        $query->where('codigo_barras', 'like', '%' . $this->busqueda . '%');
     }
 
-    public function getCodigosGeneradosAdmin()
+    $this->codigosGenerados = $query->paginate(12, ['*'], 'page', $this->page);
+}
+
+public function getCodigosGeneradosAdmin()
 {
     $query = CodigoBarras::with(['usuario', 'product']) // Cargar las relaciones 'usuario' y 'producto'
         ->latest('created_at');
@@ -45,12 +46,22 @@ class Dashboard extends Component
     {
         return $this->codigosGenerados;
     }
-    
+
     public function render()
     {
-        $this->getCodigosGenerados(); // Llama a la función para obtener los códigos generados
+        $this->getCodigosGenerados();
         $this->getCodigosGeneradosAdmin();
-        return view('livewire.dashboard', ['codigosGenerados' => $this->codigosGenerados, 'codigosGeneradosAdmin' => $this->codigosGeneradosAdmin]);
+
+        // Obtener datos para el gráfico
+        $totalCodigos = CodigoBarras::count();
+        $productosConCodigos = Product::withCount('codigosBarras')->get();
+        
+        return view('livewire.dashboard', [
+            'codigosGenerados' => $this->codigosGenerados,
+            'codigosGeneradosAdmin' => $this->codigosGeneradosAdmin,
+            'totalCodigos' => $totalCodigos,
+            'productosConCodigos' => $productosConCodigos,
+        ]);
     }
     
 }

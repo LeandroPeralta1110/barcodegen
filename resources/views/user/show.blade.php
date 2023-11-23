@@ -1,44 +1,24 @@
 <x-app-layout>
-    <section class="content container-fluid">
-        <div class="row">
-            <div class="col-md-12">
-                <div class="card">
-                    <div class="card-header">
-                        <div class="float-left">
-                            <span class="card-title">{{ __('Show') }} User</span>
+    <section class="content container mx-auto">
+        <div class="grid grid-cols-1">
+            <div class="col-span-1">
+                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                    <div class="p-6 bg-white border-b border-gray-200">
+                        <div class="flex justify-between items-center">
+                            <span class="text-lg font-semibold">{{ __('Show User') }}</span>
+                            <a href="{{ route('users.index') }}" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+                                {{ __('Back') }}
+                            </a>
                         </div>
-                        <div class="float-right">
-                            <a class="btn btn-primary" href="{{ route('users.index') }}"> {{ __('Back') }}</a>
-                        </div>
-                    </div>
-                    <div class="card-body">
-                        <div class="form-group">
-                            <strong>Name:</strong>
-                            {{ $user->name }}
-                        </div>
-                        <div class="form-group">
-                            <strong>Email:</strong>
-                            {{ $user->email }}
-                        </div>
-                        <div class="form-group">
-                            <strong>Two Factor Secret:</strong>
-                            {{ $user->two_factor_secret }}
-                        </div>
-                        <div class="form-group">
-                            <strong>Two Factor Recovery Codes:</strong>
-                            {{ $user->two_factor_recovery_codes }}
-                        </div>
-                        <div class="form-group">
-                            <strong>Two Factor Confirmed At:</strong>
-                            {{ $user->two_factor_confirmed_at }}
-                        </div>
-                        <div class="form-group">
-                            <strong>Current Team Id:</strong>
-                            {{ $user->current_team_id }}
-                        </div>
-                        <div class="form-group">
-                            <strong>Profile Photo Path:</strong>
-                            {{ $user->profile_photo_path }}
+                        <div class="mt-4">
+                            <div class="mb-4">
+                                <strong class="block text-gray-700">Name:</strong>
+                                <span class="text-gray-900">{{ $user->name }}</span>
+                            </div>
+                            <div>
+                                <strong class="block text-gray-700">Email:</strong>
+                                <span class="text-gray-900">{{ $user->email }}</span>
+                            </div>
                         </div>
                     </div>
                 </div>

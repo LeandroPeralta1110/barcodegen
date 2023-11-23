@@ -9,6 +9,7 @@ use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
 use App\Http\Controllers\UserController;
 use App\Http\Livewire\Dashboard;
+
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -27,19 +28,20 @@ Route::get('/', function () {
 Route::middleware([
     'auth:sanctum',
     config('jetstream.auth_session'),
-    'verified'
+    'verified',
+    'checkInactiveUser', 
 ])->group(function () {
     Route::get('/generar-codigo-barras', CodigoBarrasGenerator::class)->name('generar-codigo-barras');
-    Route::get('/dashboard',)->name('generar-codigo-barras');
     Route::get('/dashboard', Dashboard::class)->name('dashboard');
-    })->name('dashboard');
-    
-    Route::middleware('can:create product')->group(function () {
+});
+
+Route::middleware('can:create product')->group(function () {
     // Ruta para crear un producto
-        Route::resource('/products', App\Http\Controllers\ProductController::class);
-        
-    });
-    Route::middleware('can:create user')->group(function () {
-        Route::resource('/users', App\Http\Controllers\UserController::class);
-        Route::name('users.create')->get('/users/create', [UserController::class, 'create']);
-    });
+    Route::resource('/products', App\Http\Controllers\ProductController::class);
+});
+
+Route::middleware('can:create user')->group(function () {
+    Route::resource('/users', App\Http\Controllers\UserController::class);
+    Route::name('users.create')->get('/users/create', [UserController::class, 'create']);
+});
+

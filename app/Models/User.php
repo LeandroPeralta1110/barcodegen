@@ -27,10 +27,8 @@ class User extends Authenticatable
      * @var array<int, string>
      */
     protected $fillable = [
-        'name',
-        'email',
-        'password',
-    ];
+        'name', 'email', 'password', 'activo',
+    ];    
 
     public static $rules = [
         'name' => 'required|string|max:255',
@@ -72,4 +70,10 @@ class User extends Authenticatable
 {
     return $this->hasMany(CodigoBarras::class, 'usuario_id');
 }
+
+public function getActivoAttribute($value)
+{
+    return $value ? true : false;
+}
+
 }

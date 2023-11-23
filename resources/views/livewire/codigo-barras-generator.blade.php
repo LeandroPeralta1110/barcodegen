@@ -16,13 +16,13 @@
             <div class="mb-4">
                 <label for="" class="control-label mt-2 w-full text-left"><b>TIPO DE CODIGO DE BARRAS</b></label>
                 <div class="w-full mt-2">
-                    <select class="border rounded-md py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" wire:model="tipoCodigoBarras">
+                    <select class="border rounded-md py-2 px-8 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" wire:model="tipoCodigoBarras">
                         <option value="C128">Code 128</option>
-                        <option value="C128A">Code 128 A</option>
+                        {{-- <option value="C128A">Code 128 A</option>
                         <option value="C128B">Code 128 B</option>
                         <option value="C39">Code 39</option>
                         <option value="C39E">Code 39 E</option>
-                        <option value="C93">Code 93</option>
+                        <option value="C93">Code 93</option> --}}
                     </select>
                 </div>
             </div>
@@ -34,6 +34,7 @@
                     <input wire:model="cantidadCodigos" type="number" class="border rounded-md py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" placeholder="Ingrese cantidad" required>
                 </div>
             </div>
+
 
             @if($mostrarPopup)
             <div class="fixed inset-0 flex items-center justify-center">
@@ -60,25 +61,47 @@
             </div>
         @endif
 
-            <div class="mb-4 mt-8 mx-auto text-center">
-                <!-- Botón centrado -->
-                <button wire:click="generarCodigos" class="border border-gray-300 rounded p-2 bg-green-500 text-white mb-2">GENERAR CODIGOS DE BARRAS</button>
-                <!-- Último input centrado -->
-                <div class="w-full mt-8">
-                    <label for="scannedCodeInput" class="control-label mt-2 text-left"></label>
-                    <div class="border border-gray-300 rounded p-2">
-                        <!-- Usa el evento @input para capturar los cambios en el campo de entrada -->
-                        <input
-                            wire:model="scannedCode"
-                            id="scannedCodeInput"
-                            placeholder="Escanear código de barras aquí"
-                            class="border rounded-md w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                            required
-                            wire:keydown.enter="enviarCodigoEscaneado"
-                        >
-                    </div>
-                </div>                
-            </div>            
+        <div class="mb-4 mt-8 mx-auto text-center">
+            <!-- Botón centrado -->
+            <button wire:click="generarCodigos" class="border border-gray-300 rounded p-2 bg-green-500 text-white mb-2">GENERAR CODIGOS DE BARRAS</button>
+            
+            <!-- Primer input centrado -->
+            <div class="w-full mt-8">
+                <label for="scannedCodeInput" class="control-label mt-2 text-left"></label>
+                <div class="border border-gray-300 rounded p-2">
+                    <!-- Usa el evento @input para capturar los cambios en el campo de entrada -->
+                    <input
+                        wire:model="scannedCode"
+                        id="scannedCodeInput" 
+                        name="scannedCodeInput" 
+                        placeholder="Escanear código de barras aquí"
+                        class="border rounded-md w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                        required
+                        wire:keydown.enter="enviarCodigoEscaneado"
+                    >
+                </div>
+            </div>   
+            
+            @role('administrador')
+            <!-- Segundo input centrado -->
+            <div class="w-full mt-8">
+                <label for="scannedCodeInputManual" class="control-label mt-2 text-left"></label>
+                <div class="border border-gray-300 rounded p-2">
+                    <!-- Usa el evento @input para capturar los cambios en el campo de entrada -->
+                    <input
+                        wire:model="scannedCodeManual"
+                        id="scannedCodeInputManual" 
+                        name="scannedCodeInputManual" 
+                        placeholder="Ingresar manualmente"
+                        class="border rounded-md w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                        required
+                        wire:keydown.enter="enviarCodigoEscaneado"
+                    >
+                    <button wire:click="generarCodigoManual" class="border border-gray-300 rounded p-2 mt-4 bg-blue-500 text-white mb-2">Generar Manualmente</button>
+                </div>
+            </div>  
+            @endrole           
+        </div>                  
         </div>                    
         <div class="w-1/2 ml-4">
             <div class="bg-white border border-gray-300 p-4 rounded-md">

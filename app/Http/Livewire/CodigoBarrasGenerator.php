@@ -47,6 +47,7 @@ class CodigoBarrasGenerator extends Component
     public $nuevoProductoDescripcion;
     public $mostrarFormularioNuevoProducto = false;
     public $esperandoDecisionUsuario = true;
+    public $scannedCodeManual;
 
 
     public function generarCodigo($scannedCode = null)
@@ -480,6 +481,12 @@ $product = Product::firstOrCreate([
 
     // Genera el código de barras a partir del código alfanumérico y el producto obtenido
     $this->generateBarcodeFromCode($this->numeroCodigo, $product);
+}
+
+public function generarCodigoManual()
+{
+    $this->generarCodigo($this->scannedCodeManual);
+    $this->scannedCodeManual = '';
 }
 
 public function render()

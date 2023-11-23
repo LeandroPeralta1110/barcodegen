@@ -42,4 +42,34 @@
             {{ $codigosGenerados->links() }} <!-- Muestra los enlaces de paginación debajo de la tabla -->
         </div>
     </div>
+    @role('administrador')
+    <!-- Gráfico de Torta -->
+    <div class="mt-8 ml-8"> <!-- Ajusta el margen izquierdo aquí -->
+        <p>Total de Códigos de Barras: {{ $totalCodigos }}</p>
+        <h2>Total de Códigos Generados por Producto</h2>
+        <canvas id="graficoTorta"></canvas>
+    </div>
+    @endrole
 </div>
+   
+    <script>
+        // Configuración del gráfico de torta
+        var ctx = document.getElementById('graficoTorta').getContext('2d');
+        var myChart = new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: @json($productosConCodigos->pluck('nombre')),
+                datasets: [{
+                    data: @json($productosConCodigos->pluck('codigos_barras_count')),
+                    backgroundColor: [
+                        'rgba(255, 99, 132, 0.7)',
+                        'rgba(54, 162, 235, 0.7)',
+                        'rgba(255, 206, 86, 0.7)',
+                        'rgba(75, 192, 192, 0.7)',
+                        'rgba(153, 102, 255, 0.7)',
+                        'rgba(255, 159, 64, 0.7)',
+                    ],
+                }],
+            },
+        });
+    </script>

@@ -14,6 +14,11 @@ class AuthController extends Controller
     
     protected function authenticated(Request $request, $user)
     {
+        if (!$user->activo) {
+            auth()->logout(); // Utiliza el método logout() en lugar de logout
+            return redirect()->route('login')->with('error', 'Your account is not active.');
+        }
+
         return redirect()->route('generar-codigo-barras');
     }
 }

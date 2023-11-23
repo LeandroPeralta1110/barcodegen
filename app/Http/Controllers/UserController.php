@@ -115,11 +115,18 @@ class UserController extends Controller
      * @throws \Exception
      */
     public function destroy($id)
-    {
-        $this->authorize('delete user', User::class);
-        $user = User::find($id)->delete();
+{
+    $this->authorize('delete user', User::class);
+    $user = User::find($id);
 
-        return redirect()->route('users.index')
-            ->with('success', 'User deleted successfully');
+    if ($user) {
+        $user->update(['activo' => false]);
+        return redirect()->route('users.index')->with('success', 'User deactivated successfully');
     }
+
+    return redirect()->route('users.index')->with('error', 'User not found');
+}
+
+
+
 }

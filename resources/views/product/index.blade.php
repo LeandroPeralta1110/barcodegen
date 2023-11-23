@@ -34,12 +34,12 @@
                                 <td class="px-6 py-4 whitespace-nowrap">{{ $product->nombre }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap">{{ $product->descripcion }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                    <a href="{{ route('products.show', $product->id) }}" class="text-indigo-600 hover:text-indigo-900">Show</a>
-                                    <a href="{{ route('products.edit', $product->id) }}" class="text-indigo-600 hover:text-indigo-900 ml-2">Edit</a>
+                                    <a href="{{ route('products.show', $product->id) }}" class="text-indigo-600 hover:text-indigo-900">Ver</a>
+                                    <a href="{{ route('products.edit', $product->id) }}" class="text-indigo-600 hover:text-indigo-900 ml-2">Editar</a>
                                     <form action="{{ route('products.destroy', $product->id) }}" method="POST" class="inline-block">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="text-red-600 hover:text-red-900 ml-2">Delete</button>
+                                        <button type="submit" class="text-red-600 hover:text-red-900 ml-2">Eliminar</button>
                                     </form>
                                 </td>
                             </tr>
