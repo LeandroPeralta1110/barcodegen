@@ -6,6 +6,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\Traits\HasRoles;
+use App\Models\Sucursal;
 
 /**
  * Class UserController
@@ -35,8 +36,9 @@ class UserController extends Controller
     public function create()
     {
         $this->authorize('create user', User::class);
+        $sucursales = Sucursal::pluck('nombre', 'id'); // Invertir el orden
         $user = new User();
-        return view('user.create', compact('user'));
+        return view('user.create', compact('user', 'sucursales'));
     }
 
     /**
@@ -46,12 +48,13 @@ class UserController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function store(Request $request)
-    {
+{
     // Crea el nuevo usuario
     $user = User::create([
         'name' => $request->name,
         'email' => $request->email,
         'password' => bcrypt($request->password),
+        'sucursal_id' => $request->sucursal_id, // Asegúrate de que se esté asignando correctamente
     ]);
 
     // Obtiene el rol con el nombre específico, por ejemplo, 'usuario'
@@ -62,7 +65,7 @@ class UserController extends Controller
 
     return redirect()->route('users.index')
             ->with('success', 'User created successfully.');
-    }
+}
 
     /**
      * Display the specified resource.

@@ -26,9 +26,7 @@ class User extends Authenticatable
      *
      * @var array<int, string>
      */
-    protected $fillable = [
-        'name', 'email', 'password', 'activo',
-    ];    
+    protected $fillable = ['name', 'email', 'password', 'activo', 'sucursal_id'];  
 
     public static $rules = [
         'name' => 'required|string|max:255',
@@ -75,5 +73,13 @@ public function getActivoAttribute($value)
 {
     return $value ? true : false;
 }
+
+/**
+     * Obtén la sucursal a la que pertenece este usuario.
+     */
+    public function sucursal()
+    {
+        return $this->belongsTo(Sucursal::class, 'sucursal_id');
+    }
 
 }

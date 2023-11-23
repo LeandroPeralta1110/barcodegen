@@ -11,6 +11,12 @@
             {{ Form::text('email', $user->email, ['class' => 'form-control' . ($errors->has('email') ? ' is-invalid' : ''), 'placeholder' => 'Email']) }}
             {!! $errors->first('email', '<div class="invalid-feedback">:message</div>') !!}
         </div>
+
+        <div class="form-group">
+            {{ Form::label('sucursal_id', 'Sucursal') }}
+            {{ Form::select('sucursal_id', $sucursales, null, ['class' => 'form-control', 'placeholder' => 'Seleccione una sucursal']) }}
+            {!! $errors->first('sucursal_id', '<div class="invalid-feedback">:message</div>') !!}
+        </div>                          
         
         <div class="form-group">
             {{ Form::label('password') }}
