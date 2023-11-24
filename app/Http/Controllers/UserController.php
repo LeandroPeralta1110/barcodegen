@@ -90,8 +90,9 @@ class UserController extends Controller
     {
         $this->authorize('edit user', User::class);
         $user = User::find($id);
+        $sucursales = Sucursal::pluck('nombre', 'id'); // Invertir el orden
 
-        return view('user.edit', compact('user'));
+        return view('user.edit', compact('user', 'sucursales'));
     }
 
     /**

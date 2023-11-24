@@ -98,16 +98,12 @@ public function guardarNuevoProducto()
     $nuevoProducto = Product::create([
         'nombre' => $this->nuevoProductoNombre,
         'descripcion' => $this->nuevoProductoDescripcion,
+        'sucursal_id' => auth()->user()->sucursal_id,
     ]);
 
     // Usar el código introducido manualmente en lugar del escaneado
     $this->generateBarcodeFromCode($this->numeroCodigo, $nuevoProducto);
 
-    // Indicar que ya no estamos esperando la decisión del usuario
-    $this->esperandoDecisionUsuario = false;
-
-    // Cerrar el formulario
-    $this->mostrarFormularioNuevoProducto = false;
     $this->mostrarPopup = false;
 }
 
@@ -477,6 +473,7 @@ $this->alfanumerico =  $codigoAlfanumerico;
 $product = Product::firstOrCreate([
     'descripcion' => $codigoAlfanumerico,
     'nombre' => $codigoAlfanumerico,
+    'sucursal_id' => auth()->user()->sucursal_id,
     ]);
 
     // Genera el código de barras a partir del código alfanumérico y el producto obtenido
@@ -490,12 +487,14 @@ public function generarCodigoManual()
 }
 
 public function render()
-{
-    $this->products = Product::all();
-    $ultimoCodigoGenerado = $this->obtenerUltimoCodigoGenerado(); // Agregado
-    return view('livewire.codigo-barras-generator', [
-        'imagenesGeneradas' => $this->imagenesGeneradas,
-        'codigo' => $ultimoCodigoGenerado, // Agregado
-    ]);
-}
+    {
+        // Modificar la consulta para obtener solo productos de la sucursal del usuario actual
+        $this->products = Product::where('sucursal_id', auth()->user()->sucursal_id)->get();
+
+        $ultimoCodigoGenerado = $this->obtenerUltimoCodigoGenerado(); // Agregado
+        return view('livewire.codigo-barras-generator', [
+            'imagenesGeneradas' => $this->imagenesGeneradas,
+            'codigo' => $ultimoCodigoGenerado, // Agregado
+        ]);
+    }
 }

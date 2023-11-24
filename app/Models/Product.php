@@ -32,7 +32,7 @@ class Product extends Model
      *
      * @var array
      */
-    protected $fillable = ['nombre','descripcion'];
+    protected $fillable = ['nombre', 'descripcion', 'sucursal_id'];
 
 
     /**
@@ -41,5 +41,10 @@ class Product extends Model
     public function codigosBarras()
     {
         return $this->hasMany(codigoBarras::class, 'product_id');
+    }
+
+    public function sucursal()
+    {
+        return $this->belongsTo(Sucursal::class);
     }
 }

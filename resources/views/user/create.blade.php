@@ -1,7 +1,7 @@
 <x-app-layout>
     <div class="container mx-auto">
         <div class="p-6">
-            <h2 class="text-2xl font-semibold">{{ __('Create User') }}</h2>
+            <h2 class="text-2xl font-semibold">{{ __('Crear Usuario') }}</h2>
         </div>
         @includeif('partials.errors')
 

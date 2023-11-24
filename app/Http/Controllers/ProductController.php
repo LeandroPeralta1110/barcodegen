@@ -33,9 +33,16 @@ class ProductController extends Controller
     {
         $this->authorize('create product', Product::class);
         $product = new Product();
-        return view('product.create', compact('product'));
-    }
+        
+        // Obtener todas las sucursales para el campo de selección
+        $sucursales = \App\Models\Sucursal::pluck('nombre', 'id');
 
+        // Pasa la sucursal seleccionada al formulario si está presente
+        $sucursalSeleccionada = request('sucursal_id');
+
+        return view('product.create', compact('product', 'sucursales', 'sucursalSeleccionada'));
+    }
+    
     /**
      * Store a newly created resource in storage.
      *
@@ -43,14 +50,28 @@ class ProductController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function store(Request $request)
-    {
-        request()->validate(Product::$rules);
+{
+    request()->validate(Product::$rules);
 
-        $product = Product::create($request->all());
-
-        return redirect()->route('products.index')
-            ->with('success', 'Product created successfully.');
+    // Verifica si la solicitud proviene de la sección de creación de productos
+    if ($request->has('sucursal_id')) {
+        // Obtén la sucursal_id del formulario
+        $sucursalId = $request->input('sucursal_id');
+    } else {
+        // Obtén la sucursal_id del usuario actual
+        $sucursalId = auth()->user()->sucursal_id;
     }
+
+    // Crear el producto asignando la sucursal_id
+    $product = Product::create([
+        'nombre' => $request->nombre,
+        'descripcion' => $request->descripcion,
+        'sucursal_id' => $sucursalId,
+    ]);
+
+    return redirect()->route('products.index')
+        ->with('success', 'Product created successfully.');
+}
 
     /**
      * Display the specified resource.
@@ -72,12 +93,15 @@ class ProductController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function edit($id)
-    { 
+    {
         $this->authorize('edit product', Product::class);
 
         $product = Product::find($id);
+        
+        // Obtener todas las sucursales para el campo de selección
+        $sucursales = \App\Models\Sucursal::pluck('nombre', 'id');
 
-        return view('product.edit', compact('product'));
+        return view('product.edit', compact('product', 'sucursales'));
     }
 
     /**

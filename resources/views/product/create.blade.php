@@ -7,7 +7,7 @@
 
                 <div class="bg-white shadow-lg rounded-lg">
                     <div class="p-4 border-b">
-                        <span class="text-xl font-bold">{{ __('Create Product') }}</span>
+                        <span class="text-xl font-bold">{{ __('Crear Producto') }}</span>
                     </div>
                     <div class="p-4">
                         <form method="POST" action="{{ route('products.store') }}" role="form" enctype="multipart/form-data">

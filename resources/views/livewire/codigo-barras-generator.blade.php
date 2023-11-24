@@ -18,11 +18,11 @@
                 <div class="w-full mt-2">
                     <select class="border rounded-md py-2 px-8 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" wire:model="tipoCodigoBarras">
                         <option value="C128">Code 128</option>
-                        {{-- <option value="C128A">Code 128 A</option>
+                        {{-- <option value="C128A">Code 128 A</option> --}}
                         <option value="C128B">Code 128 B</option>
-                        <option value="C39">Code 39</option>
+                        {{-- <option value="C39">Code 39</option> --}}
                         <option value="C39E">Code 39 E</option>
-                        <option value="C93">Code 93</option> --}}
+                        <option value="C93">Code 93</option>
                     </select>
                 </div>
             </div>
