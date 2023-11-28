@@ -48,8 +48,7 @@ class CodigoBarrasGenerator extends Component
     public $mostrarFormularioNuevoProducto = false;
     public $esperandoDecisionUsuario = true;
     public $scannedCodeManual;
-
-
+    
     public function generarCodigo($scannedCode = null)
 {
     if($this->esEntradaManual){

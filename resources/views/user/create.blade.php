@@ -1,12 +1,12 @@
 <x-app-layout>
-    <div class="container mx-auto">
-        <div class="p-6">
-            <h2 class="text-2xl font-semibold">{{ __('Crear Usuario') }}</h2>
-        </div>
+    <div class="container mx-auto p-4">
         @includeif('partials.errors')
 
-        <div class="bg-white shadow-md rounded my-6">
-            <div class="p-6">
+        <div class="bg-white shadow-lg rounded-lg mx-auto max-w-md p-4">
+            <div class="border-b pb-4">
+                <span class="text-xl font-bold">{{ __('Crear Usuario') }}</span>
+            </div>
+            <div class="p-4">
                 <form method="POST" action="{{ route('users.store') }}" role="form" enctype="multipart/form-data">
                     @csrf
                     @include('user.form')

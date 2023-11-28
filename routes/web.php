@@ -2,7 +2,6 @@
 
 use App\Http\Livewire\AdminController;
 use Illuminate\Support\Facades\Route;
-
 use App\Http\Livewire\CodigoBarrasGenerator;
 use App\Http\Controllers\ProductController;
 use Spatie\Permission\Models\Role;
@@ -25,23 +24,26 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Route::middleware([
-    'auth:sanctum',
-    config('jetstream.auth_session'),
-    'verified',
-    'checkInactiveUser', 
-])->group(function () {
-    Route::get('/generar-codigo-barras', CodigoBarrasGenerator::class)->name('generar-codigo-barras');
-    Route::get('/dashboard', Dashboard::class)->name('dashboard');
-});
+// ...
 
-Route::middleware('can:create product')->group(function () {
-    // Ruta para crear un producto
-    Route::resource('/products', App\Http\Controllers\ProductController::class);
-});
+// Rutas protegidas por autenticación y verificación de correo
+Route::middleware(['auth:sanctum', 'verified'])->group(function () {
 
-Route::middleware('can:create user')->group(function () {
-    Route::resource('/users', App\Http\Controllers\UserController::class);
-    Route::name('users.create')->get('/users/create', [UserController::class, 'create']);
-});
+    // Coloca el middleware CheckInactiveUser aquí
+    Route::middleware(['auth', 'CheckInactiveUser'])->group(function () {
+        // Rutas que requieren verificación de usuario activo
+        Route::get('/generar-codigo-barras', CodigoBarrasGenerator::class)->name('generar-codigo-barras');
+        Route::get('/dashboard', Dashboard::class)->name('dashboard');
 
+        // Rutas para productos (requieren el permiso 'create product')
+        Route::middleware('can:create product')->group(function () {
+            Route::resource('/products', App\Http\Controllers\ProductController::class);
+        });
+
+        // Rutas para usuarios (requieren el permiso 'create user')
+        Route::middleware('can:create user')->group(function () {
+            Route::resource('/users', App\Http\Controllers\UserController::class);
+            Route::name('users.create')->get('/users/create', [UserController::class, 'create']);
+        });
+    });
+});

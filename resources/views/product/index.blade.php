@@ -5,7 +5,7 @@
                 <div class="flex justify-between items-center">
                     <span class="text-xl font-bold">{{ __('Productos') }}</span>
                     <a href="{{ route('products.create') }}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-                        {{ __('Create New') }}
+                        {{ __('Crear Nuevo') }}
                     </a>
                 </div>
             </div>

@@ -16,83 +16,72 @@ class Dashboard extends Component
     }
 
     public function getCodigosGenerados()
-{
-    $query = CodigoBarras::where('usuario_id', auth()->id())
-        ->latest('created_at');
+    {
+        $query = CodigoBarras::where('usuario_id', auth()->id())
+            ->latest('created_at');
 
-    if (!empty($this->busqueda)) {
-        $query->where('codigo_barras', 'like', '%' . $this->busqueda . '%');
-    }
-
-    return $query->paginate(12, ['*'], 'page', $this->page);
-}
-
-public function getCodigosGeneradosAdmin()
-{
-    $query = CodigoBarras::with(['usuario.sucursal', 'product'])
-        ->latest('created_at');
-
-    if (!empty($this->busqueda)) {
-        $query->where('codigo_barras', 'like', '%' . $this->busqueda . '%');
-    }
-
-    return $query->get();  // Obtén todos los resultados sin aplicar paginación
-}
-
-public function getDatosGraficosTodosProductos()
-{
-    $codigosGeneradosAdmin = $this->getCodigosGeneradosAdmin();
-
-    $datosTodosProductos = [];
-
-    foreach ($codigosGeneradosAdmin as $codigoGenerado) {
-        $sucursal = optional($codigoGenerado->usuario->sucursal)->nombre ?? 'Sin Sucursal';
-        $productoNombre = optional($codigoGenerado->product)->nombre ?? 'Sin Producto';
-
-        if (!isset($datosTodosProductos[$sucursal][$productoNombre])) {
-            $datosTodosProductos[$sucursal][$productoNombre] = 1;
-        } else {
-            $datosTodosProductos[$sucursal][$productoNombre]++;
+        if (!empty($this->busqueda)) {
+            $query->where('codigo_barras', 'like', '%' . $this->busqueda . '%');
         }
+
+        return $query->paginate(12, ['*'], 'page', $this->page);
     }
 
-    return $datosTodosProductos;
-}
+    public function getCodigosGeneradosAdminPaginados(){
+        $query = CodigoBarras::with(['usuario.sucursal', 'product'])
+            ->latest('created_at');
 
+        if (!empty($this->busqueda)) {
+            $query->where('codigo_barras', 'like', '%' . $this->busqueda . '%');
+        }
 
-    /* public function getDatosGraficosPorSucursal()
+        return $query->paginate(12, ['*'], 'page', $this->page);
+    }
+
+    public function getCodigosGeneradosAdmin()
+    {
+        $query = CodigoBarras::with(['usuario.sucursal', 'product'])
+            ->latest('created_at');
+
+        if (!empty($this->busqueda)) {
+            $query->where('codigo_barras', 'like', '%' . $this->busqueda . '%');
+        }
+
+        return $query->get();
+    }
+
+    public function getDatosGraficosTodosProductos()
     {
         $codigosGeneradosAdmin = $this->getCodigosGeneradosAdmin();
 
-        $datosPorSucursal = [];
+        $datosTodosProductos = [];
 
         foreach ($codigosGeneradosAdmin as $codigoGenerado) {
-            $sucursal = optional($codigoGenerado->usuario->sucursal)->nombre;
+            $sucursal = optional($codigoGenerado->usuario->sucursal)->nombre ?? 'Sin Sucursal';
+            $productoNombre = optional($codigoGenerado->product)->nombre ?? 'Sin Producto';
 
-            if ($sucursal) {
-                $productoNombre = $codigoGenerado->product->nombre;
-
-                if (!isset($datosPorSucursal[$sucursal][$productoNombre])) {
-                    $datosPorSucursal[$sucursal][$productoNombre] = 1;
-                } else {
-                    $datosPorSucursal[$sucursal][$productoNombre]++;
-                }
+            if (!isset($datosTodosProductos[$sucursal][$productoNombre])) {
+                $datosTodosProductos[$sucursal][$productoNombre] = 1;
+            } else {
+                $datosTodosProductos[$sucursal][$productoNombre]++;
             }
-        } 
+        }
 
-        return $datosPorSucursal;
-    } */
+        return $datosTodosProductos;
+    }
 
     public function render()
-{
-    $codigosGenerados = $this->getCodigosGenerados();
-    $codigosGeneradosAdmin = $this->getCodigosGeneradosAdmin();
-    $datosTodosProductos = $this->getDatosGraficosTodosProductos();
+    {
+        $codigosGenerados = $this->getCodigosGenerados();
+        $codigosGeneradosAdmin = $this->getCodigosGeneradosAdmin();
+        $datosTodosProductos = $this->getDatosGraficosTodosProductos();
+        $codigosGeneradosAdminPaginados= $this->getCodigosGeneradosAdminPaginados();
 
-    return view('livewire.dashboard', [
-        'codigosGenerados' => $codigosGenerados,
-        'codigosGeneradosAdmin' => $codigosGeneradosAdmin,
-        'datosTodosProductos' => $datosTodosProductos,
-    ]);
-}
+        return view('livewire.dashboard', [
+            'codigosGenerados' => $codigosGenerados,
+            'codigosGeneradosAdminPaginados' => $codigosGeneradosAdminPaginados,
+            'codigosGeneradosAdmin' => $codigosGeneradosAdmin,
+            'datosTodosProductos' => $datosTodosProductos,
+        ]);
+    }
 }

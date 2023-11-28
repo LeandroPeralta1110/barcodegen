@@ -5,7 +5,7 @@
                 <h2 class="text-2xl font-semibold">{{ __('Usuarios') }}</h2>
                 <div class="text-right">
                     <a href="{{ route('users.create') }}" class="px-4 py-2 mt-4 text-white bg-blue-500 rounded hover:bg-blue-700">
-                        {{ __('Create New') }}
+                        {{ __('Crear Nuevo') }}
                     </a>
                 </div>
             </div>

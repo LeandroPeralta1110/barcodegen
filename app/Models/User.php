@@ -11,7 +11,6 @@ use Laravel\Jetstream\HasProfilePhoto;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
 
-
 class User extends Authenticatable
 {
     use HasApiTokens;
@@ -64,15 +63,15 @@ class User extends Authenticatable
         'profile_photo_url',
     ];
 
-    public function codigosBarras()
-{
-    return $this->hasMany(CodigoBarras::class, 'usuario_id');
-}
+        public function codigosBarras()
+    {
+        return $this->hasMany(CodigoBarras::class, 'usuario_id');
+    }
 
-public function getActivoAttribute($value)
-{
-    return $value ? true : false;
-}
+    public function getActivoAttribute($value)
+    {
+        return $value ? true : false;
+    }
 
 /**
      * Obtén la sucursal a la que pertenece este usuario.
@@ -81,5 +80,4 @@ public function getActivoAttribute($value)
     {
         return $this->belongsTo(Sucursal::class, 'sucursal_id');
     }
-
 }

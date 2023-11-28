@@ -64,7 +64,7 @@ class UserController extends Controller
     $user->assignRole($role);
 
     return redirect()->route('users.index')
-            ->with('success', 'User created successfully.');
+            ->with('success', 'Usuario Creado Exitosamente.');
 }
 
     /**
@@ -102,16 +102,34 @@ class UserController extends Controller
      * @param  User $user
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, User $user)
-    {
-        /* $this->authorize('update', User::class); */
-        request()->validate(User::$rules);
+    public function update(Request $request, $id)
+{
+    $this->authorize('edit user', User::class);
 
-        $user->update($request->all());
+    $user = User::find($id);
 
-        return redirect()->route('users.index')
-            ->with('success', 'User updated successfully');
+    $validatedData = $request->validate([
+        'name' => 'required|string|max:255',
+        'email' => 'required|email|unique:users,email,' . $id,
+        'sucursal_id' => 'required',
+        'password' => 'nullable|min:8|confirmed', // Se agrega la validación para la confirmación de contraseña
+    ]);
+
+    // Actualizar los otros campos del usuario
+    $user->name = $validatedData['name'];
+    $user->email = $validatedData['email'];
+    $user->sucursal_id = $validatedData['sucursal_id'];
+
+    // Verificar si se proporcionó una nueva contraseña y actualizarla
+    if (!empty($validatedData['password'])) {
+        $user->password = bcrypt($validatedData['password']);
     }
+
+    $user->save();
+
+    return redirect()->route('users.index')->with('success', 'Usuario actualizado correctamente.');
+}
+
 
     /**
      * @param int $id
@@ -125,7 +143,7 @@ class UserController extends Controller
 
     if ($user) {
         $user->update(['activo' => false]);
-        return redirect()->route('users.index')->with('success', 'User deactivated successfully');
+        return redirect()->route('users.index')->with('success', 'Usuario Desactivado');
     }
 
     return redirect()->route('users.index')->with('error', 'User not found');
