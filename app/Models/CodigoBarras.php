@@ -11,7 +11,7 @@ class CodigoBarras extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['codigo_barras', 'usuario_id','product_id','imagen_codigo_barras','impresion'];
+    protected $fillable = ['codigo_barras', 'usuario_id','product_id','imagen_codigo_barras','impresion','contador_reimpresiones'];
     protected $table = 'codigos_barras';
 
     public function usuario()

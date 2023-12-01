@@ -1,6 +1,6 @@
 <div class="h-screen flex">
-    <div class="w-full p-8 flex space-x-4">
-        <div class="w-1/2 flex flex-col bg-white border border-gray-300 p-8 rounded-md">            
+    <div class="w-full flex space-x-4">
+        <div class="w-1/2 flex flex-col bg-white border border-gray-300 p-8 rounded-md">                       
             <div class="mb-4">
                 <label for="" class="control-label mt-2 mb-3 w-full text-left"><b>PRODUCTO</b></label>
                 <div class="w-full mt-2">
@@ -35,38 +35,39 @@
                 </div>
             </div>
 
-
             @if($mostrarPopup)
-            <div class="fixed inset-0 flex items-center justify-center">
-                <div class="bg-white p-4 rounded-md shadow-md">
-                    <p>¿Quieres generar un nuevo producto para el código escaneado?</p>
-                    @if($mostrarFormularioNuevoProducto)
-                    <!-- Input para el nombre del producto -->
-                    <div class="mb-4">
-                        <label for="nuevoProductoNombre">Nombre del Producto</label>
-                        <input wire:model="nuevoProductoNombre" id="nuevoProductoNombre" type="text" class="border rounded-md py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
-                    </div>
-                    
-                    <!-- Input para la descripción del producto -->
-                    <div class="mb-4">
-                        <label for="nuevoProductoDescripcion">Descripción del Producto</label>
-                        <input wire:model="nuevoProductoDescripcion" id="nuevoProductoDescripcion" type="text" class="border rounded-md py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required value='{{ $alfanumerico }}'>
-                    </div>
+                <div class="fixed inset-0 flex items-center justify-center z-50">
+                    <div class="bg-white p-4 rounded-md shadow-md">
+                        <p>¿Quieres generar un nuevo producto para el código escaneado?</p>
+                        @if($mostrarFormularioNuevoProducto)
+                            <!-- Input para el nombre del producto -->
+                            <div class="mb-4">
+                                <label for="nuevoProductoNombre">Nombre del Producto</label>
+                                <input wire:model="nuevoProductoNombre" id="nuevoProductoNombre" type="text" class="border rounded-md py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
+                            </div>
+                            
+                            <!-- Input para la descripción del producto -->
+                            <div class="mb-4">
+                                <label for="nuevoProductoDescripcion">Descripción del Producto</label>
+                                <input wire:model="nuevoProductoDescripcion" id="nuevoProductoDescripcion" type="text" class="border rounded-md py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required value='{{ $alfanumerico }}'>
+                            </div>
 
-                    <!-- Botones del popup -->
-                    <button wire:click="guardarNuevoProducto" class="border border-gray-300 rounded p-2 bg-green-500 text-white mb-2">Generar</button>
-                    <button wire:click="ocultarPopup" class="border border-gray-300 rounded p-2 bg-red-500 text-white mb-2">Cancelar</button>
-                    @endif
+                            <!-- Botones del popup -->
+                            <button wire:click="guardarNuevoProducto" class="border border-gray-300 rounded p-2 bg-green-500 text-white mb-2">Generar</button>
+                            <button wire:click="ocultarPopup" class="border border-gray-300 rounded p-2 bg-red-500 text-white mb-2">Cancelar</button>
+                        @endif
+                    </div>
                 </div>
-            </div>
-        @endif
+            @endif
 
-        <div class="mb-4 mt-8 mx-auto text-center">
+        
+
+        <div class="mb-4 mt-5 mx-auto text-center">
             <!-- Botón centrado -->
             <button wire:click="generarCodigos" class="border border-gray-300 rounded p-2 bg-green-500 text-white mb-2">GENERAR CODIGOS DE BARRAS</button>
             
             <!-- Primer input centrado -->
-            <div class="w-full mt-8">
+            <div class="w-full mt-5 relative">
                 <label for="scannedCodeInput" class="control-label mt-2 text-left"></label>
                 <div class="border border-gray-300 rounded p-2">
                     <!-- Usa el evento @input para capturar los cambios en el campo de entrada -->
@@ -80,11 +81,17 @@
                         wire:keydown.enter="enviarCodigoEscaneado"
                     >
                 </div>
-            </div>   
+            
+                @if($this->productoCreado)
+                        <div class="bg-white p-4 rounded-md shadow-md">
+                            <button wire:click="desvincularProducto" class="border border-gray-300 rounded p-2 bg-yellow-500 text-white">Desvincular Producto</button>
+                        </div>
+                @endif
+            </div>
             
             @role('administrador')
             <!-- Segundo input centrado -->
-            <div class="w-full mt-8">
+            <div class="w-full mt-5">
                 <label for="scannedCodeInputManual" class="control-label mt-2 text-left"></label>
                 <div class="border border-gray-300 rounded p-2">
                     <!-- Usa el evento @input para capturar los cambios en el campo de entrada -->
@@ -100,7 +107,26 @@
                     <button wire:click="generarCodigoManual" class="border border-gray-300 rounded p-2 mt-4 bg-blue-500 text-white mb-2">Generar Manualmente</button>
                 </div>
             </div>  
-            @endrole           
+            <div class="mb-4 mt-5">
+                <label for="buscarCodigo" class="control-label mt-2 w-full text-left"><b>Buscar por Código de Barras</b></label>
+                <div class="w-full mt-2">
+                    <input wire:model="buscarCodigo" type="text" class="border rounded-md py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" placeholder="Ingrese código de barras">
+                </div>
+            
+                @if (!empty($codigosEncontrados))
+                    <p class="text-green-500 mt-2"><b>Códigos de Barras Encontrados:</b></p>
+                    <ul>
+                        @foreach ($codigosEncontrados as $codigoEncontrado)
+                            <li>
+                                {{ $codigoEncontrado->codigo_barras }} <button wire:click="actualizarEstado({{ $codigoEncontrado->id }})" class="border border-gray-300 rounded p-2 mt-4 bg-blue-500 text-white mb-2" style="cursor: pointer">Reimprimir</button>
+                            </li>
+                        @endforeach
+                    </ul>
+                @else
+                    <p class="text-red-500 mt-2"><b>No se encontraron códigos de barras.</b></p>
+                @endif
+            </div>                
+            @endrole 
         </div>                  
         </div>                    
         <div class="w-1/2 ml-4">
@@ -143,6 +169,8 @@
         }, 1500);
     </script>
     @endif
+
+    
 </div>
 </div>
 <script>

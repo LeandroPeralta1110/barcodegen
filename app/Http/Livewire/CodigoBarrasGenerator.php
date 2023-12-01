@@ -48,21 +48,39 @@ class CodigoBarrasGenerator extends Component
     public $mostrarFormularioNuevoProducto = false;
     public $esperandoDecisionUsuario = true;
     public $scannedCodeManual;
+    public $productoCreado = false;
+    public $producto;
+    public $codigosEncontrados = [];
+    public $buscarCodigo;
+    public $actualizarEstado=false;
+
+    public function updatedBuscarCodigo()
+{
+    $this->buscarCodigo();
+}
     
     public function generarCodigo($scannedCode = null)
 {
-    if($this->esEntradaManual){
+    if ($this->esEntradaManual) {
         return;
     }
 
     if ($scannedCode !== null) {
-        $this->entradaManual = true;
-        $this->mostrarFormularioNuevoProducto = true;
-        $this->numeroCodigo = $scannedCode;
-        $this->mostrarPopup();
-        $this->esperandoDecisionUsuario = true;
-        // El usuario ha escaneado un código de barras, usa el valor escaneado
-
+        // Verificar si el producto ya ha sido creado
+        if (!$this->productoCreado) {
+            // Mostrar el formulario y el popup solo si el producto no ha sido creado
+            $this->entradaManual = true;
+            $this->mostrarFormularioNuevoProducto = true;
+            $this->numeroCodigo = $scannedCode;
+            $this->mostrarPopup();
+            $this->esperandoDecisionUsuario = true;
+            // El usuario ha escaneado un código de barras, usa el valor escaneado
+        } else {
+            // Vincular automáticamente el código al producto creado
+            $this->numeroCodigo = $scannedCode;
+            $this->generateBarcodeFromCode($this->numeroCodigo, $this->producto);
+            // No es necesario mostrar el formulario y el popup nuevamente
+        }
     } else {
         // El usuario no escaneó un código de barras, genera un nuevo código aleatorio
         do {
@@ -71,16 +89,23 @@ class CodigoBarrasGenerator extends Component
 
         $this->numeroCodigo = $nuevoCodigo;
         // Genera el código de barras a partir del código alfanumérico
-        $this->generateBarcodeFromCode($this->numeroCodigo);
+        $this->generateBarcodeFromCode($this->numeroCodigo, $this->productoCreado);
     }
 }
-    
+
+public function desvincularProducto()
+{
+    // Cambiar el estado de productoCreado a false
+    $this->productoCreado = false;
+}
+
 public function enviarCodigoEscaneado()
 {
-    if (CodigoBarras::where('codigo_barras',$this->scannedCode)->exists()) {
+    if (CodigoBarras::where('codigo_barras', $this->scannedCode)->exists()) {
         $this->mostrarMensaje = true;
         return;
     }
+
     // Restablecer la bandera después de procesar el código
     if (!$this->esEntradaManual && $this->esperandoDecisionUsuario) {
         // Procesa el código escaneado automáticamente solo si no es una entrada manual
@@ -103,8 +128,13 @@ public function guardarNuevoProducto()
     // Usar el código introducido manualmente en lugar del escaneado
     $this->generateBarcodeFromCode($this->numeroCodigo, $nuevoProducto);
 
+    // Marcar que el producto ha sido creado
+    $this->productoCreado = true;
+    $this->producto = $nuevoProducto;
+
     $this->mostrarPopup = false;
 }
+
 
 private function generateUniqueCode()
 {
@@ -122,7 +152,7 @@ private function generateUniqueCode()
 private function generateBarcodeFromCode($code, $nombre = null)
 {
     // Verificar si el código ya está registrado
-    if (CodigoBarras::where('codigo_barras', $code)->exists()) {
+    if (CodigoBarras::where('codigo_barras', $code)->exists() && !$this->actualizarEstado) {
         $this->mostrarMensaje = true;
         return;
     }
@@ -241,16 +271,20 @@ private function generateBarcodeFromCode($code, $nombre = null)
         $this->imagenesGeneradas[] = $this->codigoGenerado;
     }
 
-     // Guarda el código y la imagen en la base de datos
-     $codigoBarras = new CodigoBarras([
-        'codigo_barras' => $code,
-        'usuario_id' => auth()->id(),
-        'product_id' => (!empty($nombre)) ? $nombre->id : $this->selectedProduct,
-        'imagen_codigo_barras' => $this->codigoGenerado,
-        'impresion' => false, // Establecer el valor por defecto como false
-        'created_at' => now('America/Argentina/Buenos_Aires'),
-    ]);
-    $codigoBarras->save();
+    if(!$this->actualizarEstado){
+        // Guarda el código y la imagen en la base de datos
+        $codigoBarras = new CodigoBarras([
+           'codigo_barras' => $code,
+           'usuario_id' => auth()->id(),
+           'product_id' => (!empty($nombre)) ? $nombre->id : $this->selectedProduct,
+           'imagen_codigo_barras' => $this->codigoGenerado,
+           'impresion' => false, // Establecer el valor por defecto como false
+           'created_at' => now('America/Argentina/Buenos_Aires'),
+       ]);
+       $codigoBarras->save();
+    }
+
+    $this->actualizarEstado=false;
 }
 
 public function ocultarMensaje()
@@ -483,6 +517,49 @@ public function generarCodigoManual()
 {
     $this->generarCodigo($this->scannedCodeManual);
     $this->scannedCodeManual = '';
+}
+
+public function buscarCodigo()
+{
+    // Aquí debes implementar la lógica para buscar el código de barras en la base de datos
+    // y asignar el resultado a la propiedad $codigosEncontrados
+
+    // Verifica si el campo de búsqueda está vacío
+    if (!empty($this->buscarCodigo)) {
+        $query = CodigoBarras::with(['usuario.sucursal', 'product'])
+            ->where('codigo_barras', 'like', '%' . $this->buscarCodigo . '%')
+            ->latest('created_at')
+            ->get();
+
+        $this->codigosEncontrados = $query;
+    } else {
+        // Si el campo de búsqueda está vacío, no hagas ninguna búsqueda y establece la propiedad como un array vacío
+        $this->codigosEncontrados = [];
+    }
+}
+
+public function actualizarEstado($codigoId)
+{
+    $codigo = CodigoBarras::find($codigoId);
+
+    if ($codigo) {
+        // Incrementa el contador de reimpresiones
+        $nuevoContadorReimpresiones = $codigo->contador_reimpresiones + 1;
+
+        // Actualiza el estado y el contador de reimpresiones del código de barras
+        $codigo->update([
+            'impresion' => 0,
+            'contador_reimpresiones' => $nuevoContadorReimpresiones,
+        ]);
+
+        $this->actualizarEstado=true;
+
+        // Vuelve a generar la imagen del código de barras actualizado
+        $this->generateBarcodeFromCode($codigo->codigo_barras, $codigo->product_id);
+
+        // Vuelve a ejecutar la búsqueda para actualizar la lista de códigos
+        $this->buscarCodigo();
+    }
 }
 
 public function render()

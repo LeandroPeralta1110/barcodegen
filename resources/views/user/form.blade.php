@@ -13,8 +13,8 @@
         </div>
 
         <div class="form-group mt-3">
-            {{ Form::label('sucursal_id', 'Sucursal') }}
-            {{ Form::select('sucursal_id', $sucursales, null, ['class' => 'form-control', 'placeholder' => 'Seleccione una sucursal']) }}
+            {{ Form::label('sucursal_id', 'Unidad de negocio') }}
+            {{ Form::select('sucursal_id', $sucursales, null, ['class' => 'form-control', 'placeholder' => 'Seleccione una Unidad de Negocio']) }}
             {!! $errors->first('sucursal_id', '<div class="invalid-feedback">:message</div>') !!}
         </div>                          
         

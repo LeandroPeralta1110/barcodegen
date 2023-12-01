@@ -24,7 +24,7 @@
                                 <th class="px-4 py-2">{{ __('ID') }}</th>
                                 <th class="px-4 py-2">{{ __('Nombre') }}</th>
                                 <th class="px-4 py-2">{{ __('Descripción') }}</th>
-                                <th class="px-4 py-2">{{ __('Sucursal') }}</th>
+                                <th class="px-4 py-2">{{ __('Unidad de Negocio') }}</th>
                                 <th class="px-4 py-2">{{ __('Acciones') }}</th>
                             </tr>
                         </thead>

@@ -14,6 +14,7 @@
                         <th class="border border-gray-300 py-2 px-4 bg-gray-100">Producto Vinculado</th>
                         <th class="border border-gray-300 py-2 px-4 bg-gray-100">Usuario</th>
                         <th class="border border-gray-300 py-2 px-4 bg-gray-100">Unidad de Negocio</th>
+                        <th class="border border-gray-300 py-2 px-4 bg-gray-100">Impresiones</th>
                         @endrole
                     </tr>
                 </thead>
@@ -34,6 +35,7 @@
                             <td class="border border-gray-300 py-2 px-4">{{ $codigoGenerado->product->nombre }}</td>
                             <td class="border border-gray-300 py-2 px-4">{{ $codigoGenerado->usuario->name }}</td>
                             <td class="border border-gray-300 py-2 px-4">{{ $codigoGenerado->usuario->sucursal->nombre }}</td>
+                            <td class="border border-gray-300 py-2 px-4">{{ $codigoGenerado->contador_reimpresiones}}</td>
                         </tr>
                     @endforeach
                     @endrole
