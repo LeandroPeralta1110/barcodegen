@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Product;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 /**
  * Class ProductController
@@ -18,7 +19,22 @@ class ProductController extends Controller
      */
     public function index()
     {
-        $products = Product::paginate();
+        if (Auth::user()->roles->contains('name', 'administrador')) {
+            // Si es un administrador, obtener todos los usuarios
+            $products = Product::paginate();
+        } elseif (Auth::user()->roles->contains('name', 'administrador_lavazza')) {
+            // Si es un administrador_lavazza, obtener solo los usuarios de la sucursal Lavazza
+            $products = Product::where('sucursal_id', 2)->paginate();
+        } elseif (Auth::user()->roles->contains('name', 'administrador_jumillano')) {
+            // Si es un administrador_jumillano, obtener solo los usuarios de la sucursal Jumillano
+            $products = Product::where('sucursal_id', 1)->paginate();
+        } elseif (Auth::user()->roles->contains('name', 'administrador_impacto')) {
+            // Si es un administrador_impacto, obtener solo los usuarios de la sucursal Impacto
+            $products = Product::where('sucursal_id', 3)->paginate();
+        } else {
+            // En caso contrario, no tiene permisos para ver usuarios
+            abort(403, 'Unauthorized');
+        }
 
         return view('product.index', compact('products'))
             ->with('i', (request()->input('page', 1) - 1) * $products->perPage());
@@ -31,7 +47,13 @@ class ProductController extends Controller
      */
     public function create()
     {
-        $this->authorize('create product', Product::class);
+        // Verificar si el usuario es administrador o administrador_lavazza
+        if (Auth::user()->roles->contains('name', 'administrador')) {
+            $this->authorize('create product', Product::class);
+        } elseif (Auth::user()->roles->contains('name', 'administrador_lavazza')) {
+            $this->authorize('create product_area_lavazza', Product::class);
+        }
+       
         $product = new Product();
         
         // Obtener todas las sucursales para el campo de selección
@@ -94,7 +116,11 @@ class ProductController extends Controller
      */
     public function edit($id)
     {
+        if (Auth::user()->roles->contains('name', 'administrador')) {
         $this->authorize('edit product', Product::class);
+        }elseif(Auth::user()->roles->contains('name', 'administrador_lavazza')){
+            $this->authorize('edit product_area_lavazza', Product::class);
+        }
 
         $product = Product::find($id);
         
@@ -128,7 +154,11 @@ class ProductController extends Controller
      */
     public function destroy($id)
 {
+    if (Auth::user()->roles->contains('name', 'administrador')) {
     $this->authorize('delete product', Product::class);
+    }elseif(Auth::user()->roles->contains('name', 'administrador_lavazza')){
+        $this->authorize('delete product_area_lavazza', Product::class);
+    }
 
     $product = Product::with('codigosBarras')->find($id);
 

@@ -12,10 +12,12 @@
         </div>
         
         <!-- Nuevo campo de selección para la sucursal -->
+        @role('administrador')
         <div class="form-group mt-3">
             {{ Form::label('sucursal_id', 'Sucursal') }}
             {{ Form::select('sucursal_id', $sucursales, null, ['class' => 'form-control' . ($errors->has('sucursal_id') ? ' is-invalid' : ''), 'placeholder' => 'Selecciona una sucursal']) }}
             {!! $errors->first('sucursal_id', '<div class="invalid-feedback">:message</div>') !!}
         </div>
+        @endrole
     </div>
 </div>

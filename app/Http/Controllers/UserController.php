@@ -7,6 +7,12 @@ use Illuminate\Http\Request;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\Traits\HasRoles;
 use App\Models\Sucursal;
+use Illuminate\Contracts\Validation\Rule;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule as ValidationRule;
+use Spatie\Permission\Models\Permission;
 
 /**
  * Class UserController
@@ -14,19 +20,34 @@ use App\Models\Sucursal;
  */
 class UserController extends Controller
 {
-    use HasRoles;
+    use HasFactory, Notifiable, HasRoles;
     /**
      * Display a listing of the resource.
      *
      * @return \Illuminate\Http\Response
      */
     public function index()
-    {
-        $this->authorize('view user', User::class);
+{
+    if (Auth::user()->roles->contains('name', 'administrador')) {
+        // Si es un administrador, obtener todos los usuarios
         $users = User::paginate();
-        return view('user.index', compact('users'))
-            ->with('i', (request()->input('page', 1) - 1) * $users->perPage());
+    } elseif (Auth::user()->roles->contains('name', 'administrador_lavazza')) {
+        // Si es un administrador_lavazza, obtener solo los usuarios de la sucursal Lavazza
+        $users = User::where('sucursal_id', 2)->paginate();
+    } elseif (Auth::user()->roles->contains('name', 'administrador_jumillano')) {
+        // Si es un administrador_jumillano, obtener solo los usuarios de la sucursal Jumillano
+        $users = User::where('sucursal_id', 1)->paginate();
+    } elseif (Auth::user()->roles->contains('name', 'administrador_impacto')) {
+        // Si es un administrador_impacto, obtener solo los usuarios de la sucursal Impacto
+        $users = User::where('sucursal_id', 3)->paginate();
+    } else {
+        // En caso contrario, no tiene permisos para ver usuarios
+        abort(403, 'Unauthorized');
     }
+
+    return view('user.index', compact('users'))
+        ->with('i', (request()->input('page', 1) - 1) * $users->perPage());
+}
 
     /**
      * Show the form for creating a new resource.
@@ -34,11 +55,19 @@ class UserController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function create()
-    {
-        $this->authorize('create user', User::class);
-        $sucursales = Sucursal::pluck('nombre', 'id'); // Invertir el orden
+    {    
+        // Verificar si el usuario es administrador o administrador_lavazza
+        if (Auth::user()->roles->contains('name', 'administrador')) {
+            $this->authorize('create user', User::class);
+        } elseif (Auth::user()->roles->contains('name', 'administrador_lavazza')) {
+            $this->authorize('create user_area_lavazza', User::class);
+        }
+    
+        $sucursales = Sucursal::pluck('nombre', 'id');
         $user = new User();
-        return view('user.create', compact('user', 'sucursales'));
+        $roles = Role::pluck('name', 'id');
+    
+        return view('user.create', compact('user', 'sucursales', 'roles'));
     }
 
     /**
@@ -47,24 +76,67 @@ class UserController extends Controller
      * @param  \Illuminate\Http\Request $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    
+     public function store(Request $request)
 {
-    // Crea el nuevo usuario
+    // Crear el nuevo usuario
     $user = User::create([
         'name' => $request->name,
         'email' => $request->email,
         'password' => bcrypt($request->password),
-        'sucursal_id' => $request->sucursal_id, // Asegúrate de que se esté asignando correctamente
     ]);
 
-    // Obtiene el rol con el nombre específico, por ejemplo, 'usuario'
-    $role = Role::where('name', 'usuario')->first();
+    // Verificar si el usuario tiene el rol "administrador"
+    if (Auth::user()->roles->contains('name', 'administrador'))  {
+        // Si es administrador, asignar el rol recibido en el formulario
+        $role = $request->role;
+        
+        if ($role) {
+            // Utiliza attach para asociar roles a usuarios
+            $user->roles()->attach($role);
 
-    // Asigna el rol al usuario
-    $user->assignRole($role);
+            // Asignar la sucursal_id según el rol específico
+            if ($role === '4') {
+                $user->sucursal_id = 1; // Asigna el ID de la sucursal correspondiente para Jumillano
+            }elseif($role === '5'){
+                $user->sucursal_id = 2;
+            }elseif($role === '6'){
+                $user->sucursal_id = 3;
+            }
 
-    return redirect()->route('users.index')
-            ->with('success', 'Usuario Creado Exitosamente.');
+            // Guardar el usuario con los roles y sucursal_id asignados
+            $user->save();
+
+            return redirect()->route('users.index')->with('success', 'Usuario Creado Exitosamente.');
+        } else {
+                // Manejar el caso en el que el rol no existe
+                // Puedes lanzar una excepción, redirigir con un mensaje de error, etc.
+                return redirect()->back()->with('error', 'El rol especificado no existe.');
+            }
+    } elseif (Auth::user()->roles->contains('name', 'administrador_jumillano')) {
+        // Si es administrador_jumillano, asignar el rol 'usuario' (puedes personalizar esta lógica según tus necesidades)
+        $role = Role::where('name', 'usuario')->first();
+        $user->assignRole($role);
+        $user->sucursal_id = 1;
+    } elseif (Auth::user()->roles->contains('name', 'administrador_lavazza')) {
+        // Si es administrador_lavazza, asignar el rol 'usuario' (puedes personalizar esta lógica según tus necesidades)
+        $role = Role::where('name', 'usuario')->first();
+        $user->assignRole($role);
+        $user->sucursal_id = 2;
+    } elseif (Auth::user()->roles->contains('name', 'administrador_impacto')) {
+        // Si es administrador_impacto, asignar el rol 'usuario' (puedes personalizar esta lógica según tus necesidades)
+        $role = Role::where('name', 'usuario')->first();
+        $user->assignRole($role);
+        $user->sucursal_id = 3;
+    }
+
+    // Obtener los roles después de asignarlos
+    $roles = $user->roles;
+
+    // Guardar el usuario con los roles y sucursal_id asignados
+    $user->save();
+
+    return redirect()->route('users.index')->with('success', 'Usuario Creado Exitosamente.');
 }
 
     /**
@@ -88,11 +160,18 @@ class UserController extends Controller
      */
     public function edit($id)
     {
+        if (Auth::user()->roles->contains('name', 'administrador')) {
         $this->authorize('edit user', User::class);
+        
+        }elseif(Auth::user()->roles->contains('name', 'administrador_lavazza')){
+            $this->authorize('edit user_area_lavazza', User::class);
+        }
+
+        $roles = Role::pluck('name', 'id');
         $user = User::find($id);
         $sucursales = Sucursal::pluck('nombre', 'id'); // Invertir el orden
 
-        return view('user.edit', compact('user', 'sucursales'));
+        return view('user.edit', compact('user', 'sucursales','roles'));
     }
 
     /**
@@ -104,17 +183,21 @@ class UserController extends Controller
      */
     public function update(Request $request, $id)
 {
-    $this->authorize('edit user', User::class);
 
     $user = User::find($id);
 
     $validatedData = $request->validate([
         'name' => 'required|string|max:255',
-        'email' => 'required|email|unique:users,email,' . $id,
+        'email' => [
+            'required',
+            'email',
+            ValidationRule::unique('users')->ignore($id),
+        ],
         'sucursal_id' => 'required',
-        'password' => 'nullable|min:8|confirmed', // Se agrega la validación para la confirmación de contraseña
-    ]);
+        'password' => 'nullable|confirmed',
+    ]); 
 
+    dd($validatedData);
     // Actualizar los otros campos del usuario
     $user->name = $validatedData['name'];
     $user->email = $validatedData['email'];
@@ -130,7 +213,6 @@ class UserController extends Controller
     return redirect()->route('users.index')->with('success', 'Usuario actualizado correctamente.');
 }
 
-
     /**
      * @param int $id
      * @return \Illuminate\Http\RedirectResponse
@@ -138,7 +220,11 @@ class UserController extends Controller
      */
     public function destroy($id)
 {
-    $this->authorize('delete user', User::class);
+    if (Auth::user()->roles->contains('name', 'administrador')) {
+        $this->authorize('delete user', User::class);
+    }elseif(Auth::user()->roles->contains('name', 'administrador_lavazza')){
+        $this->authorize('delete user_area_lavazza', User::class);
+    }
     $user = User::find($id);
 
     if ($user) {

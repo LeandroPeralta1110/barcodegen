@@ -12,11 +12,20 @@
             {!! $errors->first('email', '<div class="invalid-feedback">:message</div>') !!}
         </div>
 
+        @role('administrador')
+
         <div class="form-group mt-3">
-            {{ Form::label('sucursal_id', 'Unidad de negocio') }}
-            {{ Form::select('sucursal_id', $sucursales, null, ['class' => 'form-control', 'placeholder' => 'Seleccione una Unidad de Negocio']) }}
-            {!! $errors->first('sucursal_id', '<div class="invalid-feedback">:message</div>') !!}
-        </div>                          
+            {{ Form::label('role', 'Rol') }}
+            {{ Form::select('role', $roles, null, ['class' => 'form-control', 'placeholder' => 'Seleccione un Rol']) }}
+            {!! $errors->first('role', '<div class="invalid-feedback">:message</div>') !!}
+        </div>
+        @endrole
+        @role('administrador_lavazza')
+        
+            {{-- Si no es administrador general, oculta el campo sucursal_id y usa el valor del usuario autenticado --}}
+            {{ Form::hidden('sucursal_id', Auth::user()->sucursal_id) }}
+        
+        @endrole                
         
         <div class="form-group mt-3">
             {{ Form::label('Contraseña') }}

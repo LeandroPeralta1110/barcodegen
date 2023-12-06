@@ -40,6 +40,31 @@ return [
             'driver' => 'session',
             'provider' => 'users',
         ],
+        'administrador' => [
+            'driver' => 'session',
+            'provider' => 'users',
+        ],
+
+        'administrador_jumillano' => [
+                    'driver' => 'session',
+                    'provider' => 'users',
+                ],
+
+        'administrador_lavazza' => [
+            'driver' => 'session',
+            'provider' => 'users',
+        ],
+
+        'administrador_impacto' => [
+            'driver' => 'session',
+            'provider' => 'users',
+        ],
+    
+        'spatie' => [
+            'driver' => 'session',
+            'provider' => 'spatie-users',
+        ],
+        // ...
     ],
 
     /*
@@ -64,12 +89,20 @@ return [
             'driver' => 'eloquent',
             'model' => App\Models\User::class,
         ],
+        // ...
+    ],
+
+    /* 'providers' => [
+        'users' => [
+            'driver' => 'eloquent',
+            'model' => App\Models\User::class,
+        ],
 
         // 'users' => [
         //     'driver' => 'database',
         //     'table' => 'users',
         // ],
-    ],
+    ], */
 
     /*
     |--------------------------------------------------------------------------
@@ -93,6 +126,11 @@ return [
             'expire' => 60,
             'throttle' => 60,
         ],
+    ],
+
+    'role' => [
+        'table' => 'roles',
+        'foreign_key' => 'id',
     ],
 
     /*

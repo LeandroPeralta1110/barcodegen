@@ -26,6 +26,30 @@
                         Crear Producto
                     </x-nav-link>
                     @endrole
+                    @role('administrador_lavazza')
+                    <x-nav-link href="{{ route('users.index') }}" :active="request()->routeIs('users.index')">
+                        Crear Usuario
+                    </x-nav-link>
+                    <x-nav-link href="{{ route('products.index') }}" :active="request()->routeIs('products.index')">
+                        Crear Producto
+                    </x-nav-link>
+                    @endrole
+                    @role('administrador_jumillano')
+                    <x-nav-link href="{{ route('users.index') }}" :active="request()->routeIs('users.index')">
+                        Crear Usuario
+                    </x-nav-link>
+                    <x-nav-link href="{{ route('products.index') }}" :active="request()->routeIs('products.index')">
+                        Crear Producto
+                    </x-nav-link>
+                    @endrole
+                    @role('administrador_impacto')
+                    <x-nav-link href="{{ route('users.index') }}" :active="request()->routeIs('users.index')">
+                        Crear Usuario
+                    </x-nav-link>
+                    <x-nav-link href="{{ route('products.index') }}" :active="request()->routeIs('products.index')">
+                        Crear Producto
+                    </x-nav-link>
+                    @endrole
                 </div>
             </div>
 

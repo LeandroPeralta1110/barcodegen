@@ -169,8 +169,6 @@
         }, 1500);
     </script>
     @endif
-
-    
 </div>
 </div>
 <script>
