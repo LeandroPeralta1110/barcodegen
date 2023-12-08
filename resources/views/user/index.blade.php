@@ -25,6 +25,7 @@
                                 <th class="px-4 py-2">{{ __('Nombre') }}</th>
                                 <th class="px-4 py-2">{{ __('Email') }}</th>
                                 <th class="px-4 py-2">{{__('Unidad de negocio')}}</th>
+                                <th class="px-4 py-2">{{ __('Roles') }}</th>
                                 <th class="px-4 py-2">{{ __('Acciones') }}</th>
                             </tr>
                         </thead>
@@ -36,6 +37,11 @@
                                         <td class="border px-4 py-2">{{ $user->name }}</td>
                                         <td class="border px-4 py-2">{{ $user->email }}</td>
                                         <td class="border px-4 py-2">{{ $user->sucursal->nombre }}</td>
+                                        <td class="border px-4 py-2">
+                                            @foreach ($user->roles as $role)
+                                                {{ $role->name }}<br>
+                                            @endforeach
+                                        </td>
                                         <td class="border px-4 py-2">
                                             <a href="{{ route('users.show', $user->id) }}" class="px-2 py-1 text-blue-500 hover:underline">{{ __('Ver') }}</a>
                                             <a href="{{ route('users.edit', $user->id) }}" class="px-2 py-1 text-green-500 hover:underline">{{ __('Editar') }}</a>

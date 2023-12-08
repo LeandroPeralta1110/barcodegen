@@ -51,7 +51,7 @@ class ProductController extends Controller
         if (Auth::user()->roles->contains('name', 'administrador')) {
             $this->authorize('create product', Product::class);
         } elseif (Auth::user()->roles->contains('name', 'administrador_lavazza')) {
-            $this->authorize('create product_area_lavazza', Product::class);
+            $this->authorize('create product', Product::class);
         }
        
         $product = new Product();
@@ -119,7 +119,7 @@ class ProductController extends Controller
         if (Auth::user()->roles->contains('name', 'administrador')) {
         $this->authorize('edit product', Product::class);
         }elseif(Auth::user()->roles->contains('name', 'administrador_lavazza')){
-            $this->authorize('edit product_area_lavazza', Product::class);
+            $this->authorize('edit product', Product::class);
         }
 
         $product = Product::find($id);
@@ -157,7 +157,7 @@ class ProductController extends Controller
     if (Auth::user()->roles->contains('name', 'administrador')) {
     $this->authorize('delete product', Product::class);
     }elseif(Auth::user()->roles->contains('name', 'administrador_lavazza')){
-        $this->authorize('delete product_area_lavazza', Product::class);
+        $this->authorize('delete product', Product::class);
     }
 
     $product = Product::with('codigosBarras')->find($id);

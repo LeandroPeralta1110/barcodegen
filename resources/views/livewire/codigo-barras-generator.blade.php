@@ -27,7 +27,6 @@
                 </div>
             </div>
             
-            
             <div class="mb-4">
                 <label for="cantidadCodigos" class="control-label mt-2 w-full text-left"><b>CANTIDAD DE CODIGOS DE BARRAS A GENERAR</b></label>
                 <div class="w-full mt-2">
@@ -90,6 +89,120 @@
             </div>
             
             @role('administrador')
+            <!-- Segundo input centrado -->
+            <div class="w-full mt-5">
+                <label for="scannedCodeInputManual" class="control-label mt-2 text-left"></label>
+                <div class="border border-gray-300 rounded p-2">
+                    <!-- Usa el evento @input para capturar los cambios en el campo de entrada -->
+                    <input
+                        wire:model="scannedCodeManual"
+                        id="scannedCodeInputManual" 
+                        name="scannedCodeInputManual" 
+                        placeholder="Ingresar manualmente"
+                        class="border rounded-md w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                        required
+                        wire:keydown.enter="enviarCodigoEscaneado"
+                    >
+                    <button wire:click="generarCodigoManual" class="border border-gray-300 rounded p-2 mt-4 bg-blue-500 text-white mb-2">Generar Manualmente</button>
+                </div>
+            </div>  
+            <div class="mb-4 mt-5">
+                <label for="buscarCodigo" class="control-label mt-2 w-full text-left"><b>Buscar por Código de Barras</b></label>
+                <div class="w-full mt-2">
+                    <input wire:model="buscarCodigo" type="text" class="border rounded-md py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" placeholder="Ingrese código de barras">
+                </div>
+            
+                @if (!empty($codigosEncontrados))
+                    <p class="text-green-500 mt-2"><b>Códigos de Barras Encontrados:</b></p>
+                    <ul>
+                        @foreach ($codigosEncontrados as $codigoEncontrado)
+                            <li>
+                                {{ $codigoEncontrado->codigo_barras }} <button wire:click="actualizarEstado({{ $codigoEncontrado->id }})" class="border border-gray-300 rounded p-2 mt-4 bg-blue-500 text-white mb-2" style="cursor: pointer">Reimprimir</button>
+                            </li>
+                        @endforeach
+                    </ul>
+                @else
+                    <p class="text-red-500 mt-2"><b>No se encontraron códigos de barras.</b></p>
+                @endif
+            </div>                
+            @endrole 
+            @role('administrador_jumillano')
+            <!-- Segundo input centrado -->
+            <div class="w-full mt-5">
+                <label for="scannedCodeInputManual" class="control-label mt-2 text-left"></label>
+                <div class="border border-gray-300 rounded p-2">
+                    <!-- Usa el evento @input para capturar los cambios en el campo de entrada -->
+                    <input
+                        wire:model="scannedCodeManual"
+                        id="scannedCodeInputManual" 
+                        name="scannedCodeInputManual" 
+                        placeholder="Ingresar manualmente"
+                        class="border rounded-md w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                        required
+                        wire:keydown.enter="enviarCodigoEscaneado"
+                    >
+                    <button wire:click="generarCodigoManual" class="border border-gray-300 rounded p-2 mt-4 bg-blue-500 text-white mb-2">Generar Manualmente</button>
+                </div>
+            </div>  
+            <div class="mb-4 mt-5">
+                <label for="buscarCodigo" class="control-label mt-2 w-full text-left"><b>Buscar por Código de Barras</b></label>
+                <div class="w-full mt-2">
+                    <input wire:model="buscarCodigo" type="text" class="border rounded-md py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" placeholder="Ingrese código de barras">
+                </div>
+            
+                @if (!empty($codigosEncontrados))
+                    <p class="text-green-500 mt-2"><b>Códigos de Barras Encontrados:</b></p>
+                    <ul>
+                        @foreach ($codigosEncontrados as $codigoEncontrado)
+                            <li>
+                                {{ $codigoEncontrado->codigo_barras }} <button wire:click="actualizarEstado({{ $codigoEncontrado->id }})" class="border border-gray-300 rounded p-2 mt-4 bg-blue-500 text-white mb-2" style="cursor: pointer">Reimprimir</button>
+                            </li>
+                        @endforeach
+                    </ul>
+                @else
+                    <p class="text-red-500 mt-2"><b>No se encontraron códigos de barras.</b></p>
+                @endif
+            </div>                
+            @endrole 
+            @role('administrador_lavazza')
+            <!-- Segundo input centrado -->
+            <div class="w-full mt-5">
+                <label for="scannedCodeInputManual" class="control-label mt-2 text-left"></label>
+                <div class="border border-gray-300 rounded p-2">
+                    <!-- Usa el evento @input para capturar los cambios en el campo de entrada -->
+                    <input
+                        wire:model="scannedCodeManual"
+                        id="scannedCodeInputManual" 
+                        name="scannedCodeInputManual" 
+                        placeholder="Ingresar manualmente"
+                        class="border rounded-md w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                        required
+                        wire:keydown.enter="enviarCodigoEscaneado"
+                    >
+                    <button wire:click="generarCodigoManual" class="border border-gray-300 rounded p-2 mt-4 bg-blue-500 text-white mb-2">Generar Manualmente</button>
+                </div>
+            </div>  
+            <div class="mb-4 mt-5">
+                <label for="buscarCodigo" class="control-label mt-2 w-full text-left"><b>Buscar por Código de Barras</b></label>
+                <div class="w-full mt-2">
+                    <input wire:model="buscarCodigo" type="text" class="border rounded-md py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" placeholder="Ingrese código de barras">
+                </div>
+            
+                @if (!empty($codigosEncontrados))
+                    <p class="text-green-500 mt-2"><b>Códigos de Barras Encontrados:</b></p>
+                    <ul>
+                        @foreach ($codigosEncontrados as $codigoEncontrado)
+                            <li>
+                                {{ $codigoEncontrado->codigo_barras }} <button wire:click="actualizarEstado({{ $codigoEncontrado->id }})" class="border border-gray-300 rounded p-2 mt-4 bg-blue-500 text-white mb-2" style="cursor: pointer">Reimprimir</button>
+                            </li>
+                        @endforeach
+                    </ul>
+                @else
+                    <p class="text-red-500 mt-2"><b>No se encontraron códigos de barras.</b></p>
+                @endif
+            </div>                
+            @endrole 
+            @role('administrador_impacto')
             <!-- Segundo input centrado -->
             <div class="w-full mt-5">
                 <label for="scannedCodeInputManual" class="control-label mt-2 text-left"></label>

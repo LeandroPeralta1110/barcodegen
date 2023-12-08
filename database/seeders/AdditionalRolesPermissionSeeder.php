@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
@@ -16,27 +15,18 @@ class AdditionalRolesPermissionSeeder extends Seeder
      */
     public function run()
     {
-        // Encontrar los roles recién creados y asignar permisos
+        // Encontrar el rol "administrador" y obtener sus permisos
+        $adminRole = Role::findByName('administrador');
+        $adminPermissions = $adminRole->permissions()->pluck('name')->toArray();
+
+        // Encontrar los roles recién creados y asignar los mismos permisos que "administrador"
         $roles = ['administrador_jumillano', 'administrador_lavazza', 'administrador_impacto'];
 
         foreach ($roles as $role) {
             $roleInstance = Role::findByName($role);
 
-            // Asignar permisos específicos para el área correspondiente al rol
-            $area = strtolower(str_replace('administrador_', '', $role));
-
-            $productPermissions = ['create product', 'edit product', 'delete product', 'view product'];
-            $userPermissions = ['create user', 'edit user', 'delete user', 'view user'];
-
-            foreach ($productPermissions as $permission) {
-                Permission::create(['name' => $permission . '_area_' . $area]);
-                $roleInstance->givePermissionTo($permission . '_area_' . $area);
-            }
-
-            foreach ($userPermissions as $permission) {
-                Permission::create(['name' => $permission . '_area_' . $area]);
-                $roleInstance->givePermissionTo($permission . '_area_' . $area);
-            }
+            // Asignar los mismos permisos que "administrador"
+            $roleInstance->givePermissionTo($adminPermissions);
         }
     }
 }

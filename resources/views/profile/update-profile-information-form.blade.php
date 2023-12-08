@@ -65,7 +65,7 @@
             <x-input id="email" type="email" class="mt-1 block w-full" wire:model.defer="state.email" autocomplete="username" />
             <x-input-error for="email" class="mt-2" />
 
-            @if (Laravel\Fortify\Features::enabled(Laravel\Fortify\Features::emailVerification()) && ! $this->user->hasVerifiedEmail())
+            {{-- @if (Laravel\Fortify\Features::enabled(Laravel\Fortify\Features::emailVerification()) && ! $this->user->hasVerifiedEmail())
                 <p class="text-sm mt-2">
                     {{ __('Your email address is unverified.') }}
 
@@ -79,11 +79,11 @@
                         {{ __('A new verification link has been sent to your email address.') }}
                     </p>
                 @endif
-            @endif
+            @endif --}}
         </div>
     </x-slot>
 
-    <x-slot name="actions">
+    {{-- <x-slot name="actions">
         <x-action-message class="mr-3" on="saved">
             {{ __('Saved.') }}
         </x-action-message>
@@ -91,5 +91,5 @@
         <x-button wire:loading.attr="disabled" wire:target="photo">
             {{ __('Save') }}
         </x-button>
-    </x-slot>
+    </x-slot> --}}
 </x-form-section>

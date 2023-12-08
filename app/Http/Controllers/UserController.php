@@ -7,10 +7,13 @@ use Illuminate\Http\Request;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\Traits\HasRoles;
 use App\Models\Sucursal;
+use Dotenv\Validator;
 use Illuminate\Contracts\Validation\Rule;
+use Illuminate\Contracts\Validation\Validator as ValidationValidator;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Validator as FacadesValidator;
 use Illuminate\Validation\Rule as ValidationRule;
 use Spatie\Permission\Models\Permission;
 
@@ -60,7 +63,11 @@ class UserController extends Controller
         if (Auth::user()->roles->contains('name', 'administrador')) {
             $this->authorize('create user', User::class);
         } elseif (Auth::user()->roles->contains('name', 'administrador_lavazza')) {
-            $this->authorize('create user_area_lavazza', User::class);
+            $this->authorize('create user', User::class);
+        }elseif (Auth::user()->roles->contains('name', 'administrador_jumillano')) {
+            $this->authorize('create user', User::class);
+        }elseif (Auth::user()->roles->contains('name', 'administrador_impacto')) {
+            $this->authorize('create user', User::class);
         }
     
         $sucursales = Sucursal::pluck('nombre', 'id');
@@ -161,18 +168,21 @@ class UserController extends Controller
     public function edit($id)
     {
         if (Auth::user()->roles->contains('name', 'administrador')) {
-        $this->authorize('edit user', User::class);
-        
-        }elseif(Auth::user()->roles->contains('name', 'administrador_lavazza')){
-            $this->authorize('edit user_area_lavazza', User::class);
+            $this->authorize('edit user', User::class);
+        } elseif (Auth::user()->roles->contains('name', 'administrador_lavazza')) {
+            $this->authorize('edit user', User::class);
+        } elseif (Auth::user()->roles->contains('name', 'administrador_impacto')) {
+            $this->authorize('edit user', User::class);
+        } elseif (Auth::user()->roles->contains('name', 'administrador_jumillano')) {
+            $this->authorize('edit user', User::class);
         }
-
+    
         $roles = Role::pluck('name', 'id');
         $user = User::find($id);
         $sucursales = Sucursal::pluck('nombre', 'id'); // Invertir el orden
-
-        return view('user.edit', compact('user', 'sucursales','roles'));
-    }
+    
+        return view('user.edit', compact('user', 'sucursales', 'roles'));
+    }    
 
     /**
      * Update the specified resource in storage.
@@ -182,36 +192,46 @@ class UserController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function update(Request $request, $id)
-{
-
-    $user = User::find($id);
-
-    $validatedData = $request->validate([
-        'name' => 'required|string|max:255',
-        'email' => [
-            'required',
-            'email',
-            ValidationRule::unique('users')->ignore($id),
-        ],
-        'sucursal_id' => 'required',
-        'password' => 'nullable|confirmed',
-    ]); 
-
-    dd($validatedData);
-    // Actualizar los otros campos del usuario
-    $user->name = $validatedData['name'];
-    $user->email = $validatedData['email'];
-    $user->sucursal_id = $validatedData['sucursal_id'];
-
-    // Verificar si se proporcionó una nueva contraseña y actualizarla
-    if (!empty($validatedData['password'])) {
-        $user->password = bcrypt($validatedData['password']);
-    }
-
-    $user->save();
-
-    return redirect()->route('users.index')->with('success', 'Usuario actualizado correctamente.');
-}
+    {
+        $user = User::find($id);
+    
+        // Actualizar los otros campos del usuario
+        $user->name = $request->input('name');
+        $user->email = $request->input('email');
+        $user->sucursal_id = $request->input('sucursal_id');
+    
+        // Verificar si se proporcionó una nueva contraseña y actualizarla
+        if (!empty($request->input('password'))) {
+            $user->password = bcrypt($request->input('password'));
+        }
+    
+        // Verificar si el usuario autenticado tiene permiso para asignar roles
+        if (Auth::user()->roles->contains('name', 'administrador')) {
+            // Verificar si se seleccionó un nuevo rol y asignarlo al usuario
+            $selectedRole = $request->input('role');
+            if ($selectedRole) {
+                $role = Role::find($selectedRole);
+                if ($role) {
+                    $user->syncRoles([$role->name]);
+    
+                    // Asignar la sucursal_id según el rol específico
+                    if ($role->name === 'administrador_jumillano') {
+                        $user->sucursal_id = 1; // Asigna el ID de la sucursal correspondiente para Jumillano
+                    } elseif ($role->name === 'administrador_lavazza') {
+                        $user->sucursal_id = 2;
+                    } elseif ($role->name === 'administrador_impacto') {
+                        $user->sucursal_id = 3;
+                    }
+                } else {
+                    return redirect()->back()->with('error', 'El rol seleccionado no existe.');
+                }
+            }
+        }
+    
+        $user->save();
+    
+        return redirect()->route('users.index')->with('success', 'Usuario actualizado correctamente.');
+    }    
 
     /**
      * @param int $id
@@ -223,8 +243,13 @@ class UserController extends Controller
     if (Auth::user()->roles->contains('name', 'administrador')) {
         $this->authorize('delete user', User::class);
     }elseif(Auth::user()->roles->contains('name', 'administrador_lavazza')){
-        $this->authorize('delete user_area_lavazza', User::class);
+        $this->authorize('delete user', User::class);
+    } elseif (Auth::user()->roles->contains('name', 'administrador_impacto')) {
+        $this->authorize('delete user', User::class);
+    } elseif (Auth::user()->roles->contains('name', 'administrador_jumillano')) {
+        $this->authorize('delete user', User::class);
     }
+
     $user = User::find($id);
 
     if ($user) {
@@ -234,7 +259,4 @@ class UserController extends Controller
 
     return redirect()->route('users.index')->with('error', 'User not found');
 }
-
-
-
 }

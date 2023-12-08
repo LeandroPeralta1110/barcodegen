@@ -42,6 +42,10 @@
             </main>
         </div>
 
+        <footer class="bg-gray-800 text-white text-center py-2">
+            Todos los derechos reservados &copy; {{ now()->year }} Area de Sistemas Ivess El Jumillano
+        </footer>
+
         @stack('modals')
 
         @livewireScripts
