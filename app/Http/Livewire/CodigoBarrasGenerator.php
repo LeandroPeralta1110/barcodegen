@@ -118,15 +118,20 @@ public function guardarNuevoProducto()
 {
     // Validar la entrada del usuario si es necesario
 
-    // Crear un nuevo producto
-    $nuevoProducto = Product::create([
-        'nombre' => $this->nuevoProductoNombre,
-        'descripcion' => $this->nuevoProductoDescripcion,
-        'sucursal_id' => auth()->user()->sucursal_id,
-    ]);
+    if ($this->selectedProduct) {
+        // Si se seleccionó un producto existente, usar ese producto
+        $nuevoProducto = Product::find($this->selectedProduct);
+    } else {
+        // Si no se seleccionó un producto existente, crear uno nuevo
+        $nuevoProducto = Product::create([
+            'nombre' => $this->nuevoProductoNombre,
+            'descripcion' => $this->nuevoProductoDescripcion,
+            'sucursal_id' => auth()->user()->sucursal_id,
+        ]);
 
-    // Usar el código introducido manualmente en lugar del escaneado
-    $this->generateBarcodeFromCode($this->numeroCodigo, $nuevoProducto);
+        // Usar el código introducido manualmente en lugar del escaneado
+        $this->generateBarcodeFromCode($this->numeroCodigo, $nuevoProducto);
+    }
 
     // Marcar que el producto ha sido creado
     $this->productoCreado = true;
@@ -134,7 +139,6 @@ public function guardarNuevoProducto()
 
     $this->mostrarPopup = false;
 }
-
 
 private function generateUniqueCode()
 {
@@ -521,13 +525,17 @@ public function generarCodigoManual()
 
 public function buscarCodigo()
 {
-    // Aquí debes implementar la lógica para buscar el código de barras en la base de datos
-    // y asignar el resultado a la propiedad $codigosEncontrados
-
     // Verifica si el campo de búsqueda está vacío
     if (!empty($this->buscarCodigo)) {
+        // Obtén el ID de la unidad de negocio del usuario actual
+        $userSucursalId = auth()->user()->sucursal_id;
+
+        // Realiza la búsqueda considerando el código de barras y la unidad de negocio
         $query = CodigoBarras::with(['usuario.sucursal', 'product'])
             ->where('codigo_barras', 'like', '%' . $this->buscarCodigo . '%')
+            ->whereHas('usuario', function ($q) use ($userSucursalId) {
+                $q->where('sucursal_id', $userSucursalId);
+            })
             ->latest('created_at')
             ->get();
 

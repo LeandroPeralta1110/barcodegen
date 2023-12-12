@@ -32,39 +32,101 @@
                 <div class="w-full mt-2">
                     <input wire:model="cantidadCodigos" type="number" class="border rounded-md py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" placeholder="Ingrese cantidad" required>
                 </div>
+                
             </div>
 
             @if($mostrarPopup)
-                <div class="fixed inset-0 flex items-center justify-center z-50">
-                    <div class="bg-white p-4 rounded-md shadow-md">
-                        <p>¿Quieres generar un nuevo producto para el código escaneado?</p>
-                        @if($mostrarFormularioNuevoProducto)
-                            <!-- Input para el nombre del producto -->
-                            <div class="mb-4">
-                                <label for="nuevoProductoNombre">Nombre del Producto</label>
-                                <input wire:model="nuevoProductoNombre" id="nuevoProductoNombre" type="text" class="border rounded-md py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
-                            </div>
-                            
-                            <!-- Input para la descripción del producto -->
-                            <div class="mb-4">
-                                <label for="nuevoProductoDescripcion">Descripción del Producto</label>
-                                <input wire:model="nuevoProductoDescripcion" id="nuevoProductoDescripcion" type="text" class="border rounded-md py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required value='{{ $alfanumerico }}'>
-                            </div>
-
-                            <!-- Botones del popup -->
-                            <button wire:click="guardarNuevoProducto" class="border border-gray-300 rounded p-2 bg-green-500 text-white mb-2">Generar</button>
-                            <button wire:click="ocultarPopup" class="border border-gray-300 rounded p-2 bg-red-500 text-white mb-2">Cancelar</button>
-                        @endif
-                    </div>
-                </div>
-            @endif
-
+            <div class="fixed inset-0 flex items-center justify-center z-50">
+                <div class="bg-white p-4 rounded-md shadow-md">
+                    <p>¿Quieres generar un nuevo producto para el código escaneado?</p>
+                    @if($mostrarFormularioNuevoProducto)
+                        <!-- Select para elegir un producto existente -->
+                        <div class="mb-4">
+                            <label for="existingProduct">Selecciona un Producto Existente</label>
+                            <select wire:model="selectedProduct" id="existingProduct" class="border rounded-md py-2 px-3 w-full text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
+                                <option value="">Selecciona un producto</option>
+                                @foreach ($products as $product)
+                                    <option value="{{ $product->id }}">{{ $product->nombre }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        @role('administrador')
+                        <!-- Input para el nombre del producto -->
+                        <div class="mb-4">
+                            <label for="nuevoProductoNombre">Nombre del Producto</label>
+                            <input wire:model="nuevoProductoNombre" id="nuevoProductoNombre" type="text" class="border rounded-md py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
+                        </div>
         
+                        <!-- Input para la descripción del producto -->
+                        <div class="mb-4">
+                            <label for="nuevoProductoDescripcion">Descripción del Producto</label>
+                            <input wire:model="nuevoProductoDescripcion" id="nuevoProductoDescripcion" type="text" class="border rounded-md py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required value='{{ $alfanumerico }}'>
+                        </div>
+        
+                        <!-- Botones del popup -->
+                        <button wire:click="guardarNuevoProducto" class="border border-gray-300 rounded p-2 bg-green-500 text-white mb-2">Generar</button>
+                        <button wire:click="ocultarPopup" class="border border-gray-300 rounded p-2 bg-red-500 text-white mb-2">Cancelar</button>
+                        @endrole
+                        @role('administrador_jumillano')
+                        <!-- Input para el nombre del producto -->
+                        <div class="mb-4">
+                            <label for="nuevoProductoNombre">Nombre del Producto</label>
+                            <input wire:model="nuevoProductoNombre" id="nuevoProductoNombre" type="text" class="border rounded-md py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
+                        </div>
+        
+                        <!-- Input para la descripción del producto -->
+                        <div class="mb-4">
+                            <label for="nuevoProductoDescripcion">Descripción del Producto</label>
+                            <input wire:model="nuevoProductoDescripcion" id="nuevoProductoDescripcion" type="text" class="border rounded-md py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required value='{{ $alfanumerico }}'>
+                        </div>
+        
+                        <!-- Botones del popup -->
+                        <button wire:click="guardarNuevoProducto" class="border border-gray-300 rounded p-2 bg-green-500 text-white mb-2">Generar</button>
+                        <button wire:click="ocultarPopup" class="border border-gray-300 rounded p-2 bg-red-500 text-white mb-2">Cancelar</button>
+                        @endrole
+                        @role('administrador_impacto')
+                        <!-- Input para el nombre del producto -->
+                        <div class="mb-4">
+                            <label for="nuevoProductoNombre">Nombre del Producto</label>
+                            <input wire:model="nuevoProductoNombre" id="nuevoProductoNombre" type="text" class="border rounded-md py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
+                        </div>
+        
+                        <!-- Input para la descripción del producto -->
+                        <div class="mb-4">
+                            <label for="nuevoProductoDescripcion">Descripción del Producto</label>
+                            <input wire:model="nuevoProductoDescripcion" id="nuevoProductoDescripcion" type="text" class="border rounded-md py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required value='{{ $alfanumerico }}'>
+                        </div>
+        
+                        <!-- Botones del popup -->
+                        <button wire:click="guardarNuevoProducto" class="border border-gray-300 rounded p-2 bg-green-500 text-white mb-2">Generar</button>
+                        <button wire:click="ocultarPopup" class="border border-gray-300 rounded p-2 bg-red-500 text-white mb-2">Cancelar</button>
+                        @endrole
+                        @role('administrador_lavazza')
+                        <!-- Input para el nombre del producto -->
+                        <div class="mb-4">
+                            <label for="nuevoProductoNombre">Nombre del Producto</label>
+                            <input wire:model="nuevoProductoNombre" id="nuevoProductoNombre" type="text" class="border rounded-md py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
+                        </div>
+        
+                        <!-- Input para la descripción del producto -->
+                        <div class="mb-4">
+                            <label for="nuevoProductoDescripcion">Descripción del Producto</label>
+                            <input wire:model="nuevoProductoDescripcion" id="nuevoProductoDescripcion" type="text" class="border rounded-md py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required value='{{ $alfanumerico }}'>
+                        </div>
+        
+                        <!-- Botones del popup -->
+                        <button wire:click="guardarNuevoProducto" class="border border-gray-300 rounded p-2 bg-green-500 text-white mb-2">Generar</button>
+                        <button wire:click="ocultarPopup" class="border border-gray-300 rounded p-2 bg-red-500 text-white mb-2">Cancelar</button>
+                        @endrole
+                        @endif
+                </div>
+            </div>
+        @endif        
 
         <div class="mb-4 mt-5 mx-auto text-center">
             <!-- Botón centrado -->
             <button wire:click="generarCodigos" class="border border-gray-300 rounded p-2 bg-green-500 text-white mb-2">GENERAR CODIGOS DE BARRAS</button>
-            
+            <span wire:loading wire:target="generarCodigos"><span class="cargando-icono"></span></span>
             <!-- Primer input centrado -->
             <div class="w-full mt-5 relative">
                 <label for="scannedCodeInput" class="control-label mt-2 text-left"></label>
@@ -287,9 +349,9 @@
 <script>
    window.imagenesGeneradas = @json($imagenesGeneradas);
 
-   let inputBuffer = '';
-let enterPressed = false;
-let isManualEntry = false;
+    let inputBuffer = '';
+    let enterPressed = false;
+    let isManualEntry = false;
 
 const scannedCodeInput = document.getElementById('scannedCodeInput');
 

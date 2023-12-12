@@ -18,6 +18,9 @@
 
             <div class="p-4">
                 <div class="table-responsive">
+                    <div class="mt-4">
+                        {{ $products->links() }}
+                    </div>
                     <table class="min-w-full bg-white border">
                         <thead>
                             <tr>
@@ -49,6 +52,7 @@
                         </tbody>
                     </table>
                 </div>
+                
             </div>
         </div>
     </div>

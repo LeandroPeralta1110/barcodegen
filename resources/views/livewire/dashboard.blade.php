@@ -46,7 +46,7 @@
                     @endforeach
                     @endrole
                     @role('administrador')
-                    @foreach ($codigosGeneradosAdminPaginados as $codigoGenerado)
+                    @foreach ($codigosGeneradosAdministrador as $codigoGenerado)
                         <tr>
                             <td class="border border-gray-300 py-2 px-4">{{ $codigoGenerado->codigo_barras }}</td>
                             <td class="border border-gray-300 py-2 px-4">{{ \Carbon\Carbon::parse($codigoGenerado->created_at)->format('d/m/Y H:i:s') }}</td>
@@ -96,9 +96,35 @@
                 </tbody>
             </table>
 
+            @role('administrador')
             <div class="mt-4">
-                {{ $codigosGenerados->links() }} <!-- Muestra los enlaces de paginación debajo de la tabla -->
+                {{ $codigosGeneradosAdministrador->links() }} <!-- Muestra los enlaces de paginación debajo de la tabla -->
             </div>
+            @endrole
+
+            @role('administrador_jumillano')
+            <div class="mt-4">
+                {{ $codigosGeneradosAdminPaginados->links() }} <!-- Muestra los enlaces de paginación debajo de la tabla -->
+            </div>
+            @endrole
+
+            @role('administrador_lavazza')
+            <div class="mt-4">
+                {{ $codigosGeneradosAdminPaginados->links() }} <!-- Muestra los enlaces de paginación debajo de la tabla -->
+            </div>
+            @endrole
+
+            @role('administrador_impacto')
+            <div class="mt-4">
+                {{ $codigosGeneradosAdminPaginados->links() }} <!-- Muestra los enlaces de paginación debajo de la tabla -->
+            </div>
+            @endrole
+
+            @role('usuario')
+            <div class="mt-4">
+                {{ $codigosGeneradosAdminPaginados->links() }} <!-- Muestra los enlaces de paginación debajo de la tabla -->
+            </div>
+            @endrole
         </div>
     </div>
     @role('administrador')

@@ -45,6 +45,18 @@ class Dashboard extends Component
         return $query->paginate(12, ['*'], 'page', $this->page);
     }
 
+    public function getCodigosGeneradosAdministrador()
+    {
+        $query = CodigoBarras::with(['usuario.sucursal', 'product'])
+            ->latest('created_at');
+
+        if (!empty($this->busqueda)) {
+            $query->where('codigo_barras', 'like', '%' . $this->busqueda . '%');
+        }
+
+        return $query->paginate(12, ['*'], 'page', $this->page);
+    }
+
     public function getCodigosGeneradosAdmin()
     {
         $query = CodigoBarras::with(['usuario.sucursal', 'product'])
@@ -112,6 +124,7 @@ class Dashboard extends Component
         $datosTodosProductos = $this->getDatosGraficosTodosProductos();
         $codigosGeneradosAdminPaginados= $this->getCodigosGeneradosAdminPaginados();
         $codigosGeneradosAdminAdmin = $this->getDatosGraficosTodosProductosAdmin();
+        $codigosGeneradosAdministrador = $this->getCodigosGeneradosAdministrador();
 
         return view('livewire.dashboard', [
             'codigosGenerados' => $codigosGenerados,
@@ -119,6 +132,7 @@ class Dashboard extends Component
             'codigosGeneradosAdmin' => $codigosGeneradosAdmin,
             'datosTodosProductos' => $datosTodosProductos,
             'datosTodosProductosAdmin' => $codigosGeneradosAdminAdmin,
+            'codigosGeneradosAdministrador' => $codigosGeneradosAdministrador,
         ]);
     }
 }

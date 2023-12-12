@@ -19,26 +19,28 @@ class ProductController extends Controller
      */
     public function index()
     {
+        $perPage = 12; // Número de productos por página
+    
         if (Auth::user()->roles->contains('name', 'administrador')) {
-            // Si es un administrador, obtener todos los usuarios
-            $products = Product::paginate();
+            // Si es un administrador, obtener todos los productos
+            $products = Product::paginate($perPage);
         } elseif (Auth::user()->roles->contains('name', 'administrador_lavazza')) {
-            // Si es un administrador_lavazza, obtener solo los usuarios de la sucursal Lavazza
-            $products = Product::where('sucursal_id', 2)->paginate();
+            // Si es un administrador_lavazza, obtener solo los productos de la sucursal Lavazza
+            $products = Product::where('sucursal_id', 2)->paginate($perPage);
         } elseif (Auth::user()->roles->contains('name', 'administrador_jumillano')) {
-            // Si es un administrador_jumillano, obtener solo los usuarios de la sucursal Jumillano
-            $products = Product::where('sucursal_id', 1)->paginate();
+            // Si es un administrador_jumillano, obtener solo los productos de la sucursal Jumillano
+            $products = Product::where('sucursal_id', 1)->paginate($perPage);
         } elseif (Auth::user()->roles->contains('name', 'administrador_impacto')) {
-            // Si es un administrador_impacto, obtener solo los usuarios de la sucursal Impacto
-            $products = Product::where('sucursal_id', 3)->paginate();
+            // Si es un administrador_impacto, obtener solo los productos de la sucursal Impacto
+            $products = Product::where('sucursal_id', 3)->paginate($perPage);
         } else {
-            // En caso contrario, no tiene permisos para ver usuarios
+            // En caso contrario, no tiene permisos para ver productos
             abort(403, 'Unauthorized');
         }
-
+    
         return view('product.index', compact('products'))
-            ->with('i', (request()->input('page', 1) - 1) * $products->perPage());
-    }
+            ->with('i', (request()->input('page', 1) - 1) * $perPage);
+    }    
 
     /**
      * Show the form for creating a new resource.
