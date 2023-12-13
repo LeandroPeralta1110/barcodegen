@@ -1,4 +1,6 @@
 <?php
+//funciones para la vista dashboard.blade.php 
+//Obtiene los codigos de barras e informacion vinculado a ellas.
 
 namespace App\Http\Livewire;
 

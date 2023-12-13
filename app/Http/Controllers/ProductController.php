@@ -1,5 +1,5 @@
 <?php
-
+//funciones que realizan acciones con los productos como crear, editar, ver y eliminar productos.
 namespace App\Http\Controllers;
 
 use App\Models\Product;
@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Auth;
  */
 class ProductController extends Controller
 {
+    public $mostrarPopup=false;
     /**
      * Display a listing of the resource.
      *

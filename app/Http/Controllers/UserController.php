@@ -1,5 +1,5 @@
 <?php
-
+//Funciones que realizan acciones con los usuarios, como crear, editar, ver y eliminar usuariso de las unidades de negocio.
 namespace App\Http\Controllers;
 
 use App\Models\User;
@@ -30,27 +30,32 @@ class UserController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function index()
-{
-    if (Auth::user()->roles->contains('name', 'administrador')) {
-        // Si es un administrador, obtener todos los usuarios
-        $users = User::paginate();
-    } elseif (Auth::user()->roles->contains('name', 'administrador_lavazza')) {
-        // Si es un administrador_lavazza, obtener solo los usuarios de la sucursal Lavazza
-        $users = User::where('sucursal_id', 2)->paginate();
-    } elseif (Auth::user()->roles->contains('name', 'administrador_jumillano')) {
-        // Si es un administrador_jumillano, obtener solo los usuarios de la sucursal Jumillano
-        $users = User::where('sucursal_id', 1)->paginate();
-    } elseif (Auth::user()->roles->contains('name', 'administrador_impacto')) {
-        // Si es un administrador_impacto, obtener solo los usuarios de la sucursal Impacto
-        $users = User::where('sucursal_id', 3)->paginate();
-    } else {
-        // En caso contrario, no tiene permisos para ver usuarios
-        abort(403, 'Unauthorized');
-    }
-
-    return view('user.index', compact('users'))
-        ->with('i', (request()->input('page', 1) - 1) * $users->perPage());
-}
+    {
+        if (Auth::user()->roles->contains('name', 'administrador')) {
+            // Si es un administrador, obtener todos los usuarios y administradores
+            $users = User::paginate();
+        } else {
+            // Obtener el ID de la unidad de negocio del usuario actual
+            $userSucursalId = auth()->user()->sucursal_id;
+    
+            if (Auth::user()->roles->contains('name', 'administrador_lavazza')) {
+                // Si es un administrador_lavazza, obtener usuarios de la sucursal Lavazza
+                $users = User::where('sucursal_id', $userSucursalId)->paginate();
+            } elseif (Auth::user()->roles->contains('name', 'administrador_jumillano')) {
+                // Si es un administrador_jumillano, obtener usuarios de la sucursal Jumillano
+                $users = User::where('sucursal_id', $userSucursalId)->paginate();
+            } elseif (Auth::user()->roles->contains('name', 'administrador_impacto')) {
+                // Si es un administrador_impacto, obtener usuarios de la sucursal Impacto
+                $users = User::where('sucursal_id', $userSucursalId)->paginate();
+            } else {
+                // En caso contrario, no tiene permisos para ver usuarios
+                abort(403, 'Unauthorized');
+            }
+        }
+    
+        return view('user.index', compact('users'))
+            ->with('i', (request()->input('page', 1) - 1) * $users->perPage());
+    }    
 
     /**
      * Show the form for creating a new resource.

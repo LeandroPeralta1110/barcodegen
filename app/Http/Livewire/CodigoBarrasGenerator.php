@@ -54,13 +54,17 @@ class CodigoBarrasGenerator extends Component
     public $buscarCodigo;
     public $actualizarEstado=false;
 
+    //llama a la funcion buscarCodigos que muestra en la vista los codigos de barras relacionados
     public function updatedBuscarCodigo()
 {
     $this->buscarCodigo();
 }
     
+    //Genera el codigo de barras aleatoriamente solo si se le dio a la accion de generar codigos de barras.
+    //o si el codigo es escaneado
     public function generarCodigo($scannedCode = null)
 {
+    //Si el codigo de barras fue escrito manualmente no lo toma
     if ($this->esEntradaManual) {
         return;
     }
@@ -93,14 +97,17 @@ class CodigoBarrasGenerator extends Component
     }
 }
 
-public function desvincularProducto()
-{
-    // Cambiar el estado de productoCreado a false
-    $this->productoCreado = false;
-}
+    //Al escanear un codigo primero se le muestra el popup de la funcion mostrarPopup 
+    //y se logra la vinculacion de productos con los codigos de barras
+    public function desvincularProducto()
+    {
+        // Cambiar el estado de productoCreado a false
+        $this->productoCreado = false;
+    }
 
-public function enviarCodigoEscaneado()
-{
+    //procesa los codigos de barras escaneados, si ya existe en la base de datos no los procesa
+    public function enviarCodigoEscaneado()
+    {
     if (CodigoBarras::where('codigo_barras', $this->scannedCode)->exists()) {
         $this->mostrarMensaje = true;
         return;
@@ -116,8 +123,6 @@ public function enviarCodigoEscaneado()
 
 public function guardarNuevoProducto()
 {
-    // Validar la entrada del usuario si es necesario
-
     if ($this->selectedProduct) {
         // Si se seleccionó un producto existente, usar ese producto
         $nuevoProducto = Product::find($this->selectedProduct);
@@ -281,7 +286,6 @@ private function generateBarcodeFromCode($code, $nombre = null)
            'codigo_barras' => $code,
            'usuario_id' => auth()->id(),
            'product_id' => (!empty($nombre)) ? $nombre->id : $this->selectedProduct,
-           'imagen_codigo_barras' => $this->codigoGenerado,
            'impresion' => false, // Establecer el valor por defecto como false
            'created_at' => now('America/Argentina/Buenos_Aires'),
        ]);
