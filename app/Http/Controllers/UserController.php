@@ -30,32 +30,34 @@ class UserController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function index()
-    {
-        if (Auth::user()->roles->contains('name', 'administrador')) {
-            // Si es un administrador, obtener todos los usuarios y administradores
-            $users = User::paginate();
-        } else {
-            // Obtener el ID de la unidad de negocio del usuario actual
-            $userSucursalId = auth()->user()->sucursal_id;
-    
-            if (Auth::user()->roles->contains('name', 'administrador_lavazza')) {
-                // Si es un administrador_lavazza, obtener usuarios de la sucursal Lavazza
-                $users = User::where('sucursal_id', $userSucursalId)->paginate();
-            } elseif (Auth::user()->roles->contains('name', 'administrador_jumillano')) {
-                // Si es un administrador_jumillano, obtener usuarios de la sucursal Jumillano
-                $users = User::where('sucursal_id', $userSucursalId)->paginate();
-            } elseif (Auth::user()->roles->contains('name', 'administrador_impacto')) {
-                // Si es un administrador_impacto, obtener usuarios de la sucursal Impacto
-                $users = User::where('sucursal_id', $userSucursalId)->paginate();
-            } else {
-                // En caso contrario, no tiene permisos para ver usuarios
-                abort(403, 'Unauthorized');
-            }
-        }
-    
-        return view('user.index', compact('users'))
-            ->with('i', (request()->input('page', 1) - 1) * $users->perPage());
-    }    
+{
+    // Obtener el ID de la unidad de negocio del usuario actual
+    $userSucursalId = auth()->user()->sucursal_id;
+
+    if (Auth::user()->roles->contains('name', 'administrador')) {
+        // Si es un administrador, obtener todos los usuarios y administradores
+        $users = User::paginate();
+    } elseif (Auth::user()->roles->contains('name', 'administrador_lavazza')) {
+        // Si es un administrador_lavazza, obtener usuarios de la sucursal Lavazza
+        $users = User::where('sucursal_id', $userSucursalId)->paginate();
+    } elseif (Auth::user()->roles->contains('name', 'administrador_jumillano')) {
+        // Si es un administrador_jumillano, obtener solo los usuarios de la sucursal Jumillano
+        $users = User::where('sucursal_id', $userSucursalId)
+            ->whereDoesntHave('roles', function ($query) {
+                $query->where('name', 'administrador');
+            })
+            ->paginate();
+    } elseif (Auth::user()->roles->contains('name', 'administrador_impacto')) {
+        // Si es un administrador_impacto, obtener usuarios de la sucursal Impacto
+        $users = User::where('sucursal_id', $userSucursalId)->paginate();
+    } else {
+        // En caso contrario, no tiene permisos para ver usuarios
+        abort(403, 'Unauthorized');
+    }
+
+    return view('user.index', compact('users'))
+        ->with('i', (request()->input('page', 1) - 1) * $users->perPage());
+}
 
     /**
      * Show the form for creating a new resource.
@@ -64,6 +66,7 @@ class UserController extends Controller
      */
     public function create()
     {    
+
         // Verificar si el usuario es administrador o administrador_lavazza
         if (Auth::user()->roles->contains('name', 'administrador')) {
             $this->authorize('create user', User::class);
@@ -91,6 +94,14 @@ class UserController extends Controller
     
      public function store(Request $request)
 {
+    $rules = [
+        'name' => 'required|string|max:255',
+        'email' => 'required|string|email|max:255|unique:users,email,',
+        'password' => 'required|string', // El campo es nullable para que no sea obligatorio, pero con una longitud mínima
+    ];
+
+    $request->validate($rules);
+
     // Crear el nuevo usuario
     $user = User::create([
         'name' => $request->name,
@@ -199,11 +210,20 @@ class UserController extends Controller
     public function update(Request $request, $id)
     {
         $user = User::find($id);
+
+        // Definir reglas de validación
+        $rules = [
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
+            'password' => 'required|string', // El campo es nullable para que no sea obligatorio, pero con una longitud mínima
+        ];
+
+        // Aplicar las reglas de validación
+        $request->validate($rules);
     
         // Actualizar los otros campos del usuario
         $user->name = $request->input('name');
         $user->email = $request->input('email');
-        $user->sucursal_id = $request->input('sucursal_id');
     
         // Verificar si se proporcionó una nueva contraseña y actualizarla
         if (!empty($request->input('password'))) {
@@ -211,7 +231,7 @@ class UserController extends Controller
         }
     
         // Verificar si el usuario autenticado tiene permiso para asignar roles
-        if (Auth::user()->roles->contains('name', 'administrador')) {
+        if (Auth::user()->roles->contains('name', 'administrador')||Auth::user()->roles->contains('name', 'administrador_jumillano')||Auth::user()->roles->contains('name', 'administrador_lavazza')||Auth::user()->roles->contains('name', 'administrador_impacto')) {
             // Verificar si se seleccionó un nuevo rol y asignarlo al usuario
             $selectedRole = $request->input('role');
             if ($selectedRole) {

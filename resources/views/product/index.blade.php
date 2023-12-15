@@ -4,6 +4,7 @@
             <div class="p-4 border-b">
                 <div class="flex justify-between items-center">
                     <span class="text-xl font-bold">{{ __('Productos') }}</span>
+                        <p class="text-red-600">*Advertencia: Si elimina un producto también se eliminarán todos los códigos de barras vinculados con él.</p>
                     <a href="{{ route('products.create') }}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
                         {{ __('Crear Nuevo') }}
                     </a>

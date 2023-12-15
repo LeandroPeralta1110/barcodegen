@@ -33,10 +33,10 @@
             {!! $errors->first('password', '<div class="invalid-feedback">:message</div>') !!}
         </div>
 
-        <div class="form-group mt-3">
+        {{-- <div class="form-group mt-3">
             {{ Form::label('Confirmar Contraseña') }}
             {{ Form::password('password_confirmation', ['class' => 'form-control', 'placeholder' => 'Confirmar Contraseña']) }}
-        </div>
+        </div> --}}
         {{-- <div class="form-group">
             {{ Form::label('two_factor_secret') }}
             {{ Form::text('two_factor_secret', $user->two_factor_secret, ['class' => 'form-control' . ($errors->has('two_factor_secret') ? ' is-invalid' : ''), 'placeholder' => 'Two Factor Secret']) }}

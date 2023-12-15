@@ -50,6 +50,10 @@
                                 @endforeach
                             </select>
                         </div>
+                        @role('usuario')
+                        <button wire:click="guardarNuevoProducto" class="border border-gray-300 rounded p-2 bg-green-500 text-white mb-2">Generar</button>
+                        <button wire:click="ocultarPopup" class="border border-gray-300 rounded p-2 bg-red-500 text-white mb-2">Cancelar</button>
+                        @endrole
                         @role('administrador')
                         <!-- Input para el nombre del producto -->
                         <div class="mb-4">
