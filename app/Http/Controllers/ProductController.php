@@ -95,7 +95,7 @@ class ProductController extends Controller
     ]);
 
     return redirect()->route('products.index')
-        ->with('success', 'Product created successfully.');
+        ->with('success', 'Producto creado exitosamente.');
 }
 
     /**
@@ -175,7 +175,7 @@ class ProductController extends Controller
     // Eliminar el producto
     $product->delete();
 
-    return redirect()->route('products.index')->with('success', 'Product and related barcodes deleted successfully');
+    return redirect()->route('products.index')->with('success', 'Productos y codigos de barras eliminados exitosamente.');
 }
 
 }

@@ -119,13 +119,16 @@ class UserController extends Controller
             $user->roles()->attach($role);
 
             // Asignar la sucursal_id según el rol específico
-            if ($role === '4') {
+            if($role === '2'){
+                $user->sucursal_id = 1;
+            }elseif ($role === '4') {
                 $user->sucursal_id = 1; // Asigna el ID de la sucursal correspondiente para Jumillano
             }elseif($role === '5'){
                 $user->sucursal_id = 2;
             }elseif($role === '6'){
                 $user->sucursal_id = 3;
             }
+           
 
             // Guardar el usuario con los roles y sucursal_id asignados
             $user->save();
@@ -239,14 +242,16 @@ class UserController extends Controller
                 if ($role) {
                     $user->syncRoles([$role->name]);
     
-                    // Asignar la sucursal_id según el rol específico
-                    if ($role->name === 'administrador_jumillano') {
+                    if ($role->name === 'administrador') {
+                        $user->sucursal_id = 1;
+                    }elseif ($role->name === 'administrador_jumillano') {
                         $user->sucursal_id = 1; // Asigna el ID de la sucursal correspondiente para Jumillano
                     } elseif ($role->name === 'administrador_lavazza') {
                         $user->sucursal_id = 2;
                     } elseif ($role->name === 'administrador_impacto') {
                         $user->sucursal_id = 3;
                     }
+                    
                 } else {
                     return redirect()->back()->with('error', 'El rol seleccionado no existe.');
                 }
