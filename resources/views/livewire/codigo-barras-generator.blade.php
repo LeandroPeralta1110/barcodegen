@@ -12,6 +12,9 @@
                     </select>
                 </div>
             </div>
+            @error('selectedProduct')
+                <p class="text-red-500 text-xs italic mt-2">{{ $message }}</p>
+            @enderror
             
             <div class="mb-4">
                 <label for="" class="control-label mt-2 w-full text-left"><b>TIPO DE CODIGO DE BARRAS</b></label>

@@ -42,9 +42,9 @@
     <body class="font-sans antialiased">
         <x-banner />
 
-        <div class="min-h-screen bg-gray-100  bg-cover bg-center bg-fixed imagenfondo">
+        <div class="min-h-screen bg-gray-100 bg-cover bg-center bg-fixed imagenfondo flex flex-col">
             @livewire('navigation-menu')
-
+        
             <!-- Page Heading -->
             @if (isset($header))
                 <header class="bg-white shadow">
@@ -53,21 +53,33 @@
                     </div>
                 </header>
             @endif
-
+        
             <!-- Page Content -->
-            <main>
+            <main class="flex-grow">
                 {{ $slot }}
             </main>
+            
+            <footer id="footer" class="hidden bg-gray-800 text-white text-center py-2">
+                Todos los derechos reservados &copy; {{ now()->year }} Area de Sistemas Ivess El Jumillano
+            </footer>
         </div>
-
-        <footer class="bg-gray-800 text-white text-center py-2">
-            Todos los derechos reservados &copy; {{ now()->year }} Area de Sistemas Ivess El Jumillano
-        </footer>
-
+        
         @stack('modals')
-
+        
         @livewireScripts
+        
         <script>
+            window.addEventListener('scroll', function() {
+                var footer = document.getElementById('footer');
+                if (footer) {
+                    if (window.scrollY + window.innerHeight >= footer.offsetTop) {
+                        footer.style.display = 'block';
+                    } else {
+                        footer.style.display = 'none';
+                    }
+                }
+            });
+            
             function downloadBarcode() {
                 var element = document.querySelector('.codigo-barras-container');
                 html2canvas(element).then(function(canvas) {

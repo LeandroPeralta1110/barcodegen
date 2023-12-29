@@ -123,6 +123,13 @@ class CodigoBarrasGenerator extends Component
 
 public function guardarNuevoProducto()
 {
+    // Validar que se haya seleccionado un producto
+    /* $this->validate([
+        'selectedProduct' => 'required',
+    ], [
+        'selectedProduct.required' => 'Por favor, selecciona un producto.',
+    ]); */
+
     if ($this->selectedProduct) {
         // Si se seleccionó un producto existente, usar ese producto
         $nuevoProducto = Product::find($this->selectedProduct);
@@ -147,6 +154,13 @@ public function guardarNuevoProducto()
 
 private function generateUniqueCode()
 {
+    // Validar que se haya seleccionado un producto
+    $this->validate([
+        'selectedProduct' => 'required',
+    ], [
+        'selectedProduct.required' => 'Por favor, selecciona un producto.',
+    ]);
+
     $product = Product::find($this->selectedProduct);
 
     // Genera un número aleatorio de 6 dígitos
