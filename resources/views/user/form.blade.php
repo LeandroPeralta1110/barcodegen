@@ -2,7 +2,7 @@
     <div class="box-body">
         
         <div class="form-group mt-3">
-            {{ Form::label('Nombre') }}
+            {{ Form::label('Usuario') }}
             {{ Form::text('name', $user->name, ['class' => 'form-control' . ($errors->has('name') ? ' is-invalid' : ''), 'placeholder' => 'Name']) }}
             {!! $errors->first('name', '<div class="invalid-feedback">:message</div>') !!}
         </div>

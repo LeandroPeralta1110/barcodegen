@@ -53,6 +53,7 @@ class CodigoBarrasGenerator extends Component
     public $codigosEncontrados = [];
     public $buscarCodigo;
     public $actualizarEstado=false;
+    public $manualCode=false;
 
     //llama a la funcion buscarCodigos que muestra en la vista los codigos de barras relacionados
     public function updatedBuscarCodigo()
@@ -66,6 +67,11 @@ class CodigoBarrasGenerator extends Component
 {
     //Si el codigo de barras fue escrito manualmente no lo toma
     if ($this->esEntradaManual) {
+        return;
+    }
+
+    if ($this->manualCode) {
+        $this->generateBarcodeFromCode($scannedCode, $this->productoCreado);
         return;
     }
 
@@ -92,8 +98,11 @@ class CodigoBarrasGenerator extends Component
         } while (CodigoBarras::where('codigo_barras', $nuevoCodigo)->exists());
 
         $this->numeroCodigo = $nuevoCodigo;
+
+        $productoSeleccionado = Product::find($this->selectedProduct);
+
         // Genera el código de barras a partir del código alfanumérico
-        $this->generateBarcodeFromCode($this->numeroCodigo, $this->productoCreado);
+        $this->generateBarcodeFromCode($this->numeroCodigo, $productoSeleccionado);
     }
 }
 
@@ -180,12 +189,10 @@ private function generateBarcodeFromCode($code, $nombre = null)
         return;
     }
 
-    /* CodigoBarras::where('product_id', $this->selectedProduct)
-        ->update(['impresion' => true]); */
-
     // Inicializar variables para el código alfanumérico y numérico
     $codigoAlfanumerico = '';
     $numeroCodigoBarras = '';
+    $sucursalUsuario = Auth::user()->sucursal_id;
 
     // Iterar sobre cada carácter en el código
     for ($i = 0; $i < strlen($code); $i++) {
@@ -223,12 +230,14 @@ private function generateBarcodeFromCode($code, $nombre = null)
 
     // Rellenar el fondo con blanco
     imagefilledrectangle($combinedImg, 0, 0, $anchoCodigo, $altoDeseado, $colorFondo);
-
+    
+    
     if (!empty($nombre)) {
-        // Obtener el producto seleccionado
-        $product = Product::find($nombre);
-    } else {
-        $product = Product::find($this->selectedProduct);
+        $product = Product::find($nombre->id);
+        /* dd($product); */
+    } elseif ($this->manualCode){
+        // Buscar el producto manual según la sucursal del usuario
+        $product = Product::where(['nombre' => 'Manual', 'sucursal_id' => $sucursalUsuario])->first();
     }
 
     // Crear un color negro para el texto
@@ -237,19 +246,22 @@ private function generateBarcodeFromCode($code, $nombre = null)
     // Calcular la posición para el nombre del producto
     $font_size = 20; // Tamaño de fuente
 
+    
+    $nombreProducto = $this->manualCode ? 'Manual' : $product;
+
     if (!empty($nombre)) {
-        $xNombreProducto = ($anchoCodigo - imagefontwidth($font_size) * strlen($product)) / 2;
-    } else {
         $xNombreProducto = ($anchoCodigo - imagefontwidth($font_size) * strlen($product->nombre)) / 2;
+    } else {
+        $xNombreProducto = ($anchoCodigo - imagefontwidth($font_size) * strlen($nombreProducto)) / 2;
     }
 
     $yNombreProducto = 10; // Espacio desde la parte superior
 
     if (!empty($nombre)) {
-        imagestring($combinedImg, $font_size, $xNombreProducto, $yNombreProducto, $product->first()->nombre, $colorTexto);
+        imagestring($combinedImg, $font_size, $xNombreProducto, $yNombreProducto, $product->nombre, $colorTexto);
     } else {
         // Agregar el nombre del producto como texto en la imagen combinada
-        imagestring($combinedImg, $font_size, $xNombreProducto, $yNombreProducto, $product->nombre, $colorTexto);
+        imagestring($combinedImg, $font_size, $xNombreProducto, $yNombreProducto, $nombreProducto, $colorTexto);
     }
 
     // Calcular la posición donde se copiará el código de barras en la imagen (centrado horizontalmente)
@@ -289,20 +301,21 @@ private function generateBarcodeFromCode($code, $nombre = null)
     imagedestroy($img);
 
     $this->codigoGenerado = 'data:image/png;base64,' . base64_encode($imgData);
-
-    if (!empty($nombre)) {
+    
+    if (!empty($nombre) || $this->manualCode) {
         $this->imagenesGeneradas[] = $this->codigoGenerado;
     }
 
-    if(!$this->actualizarEstado){
+    if (!$this->actualizarEstado || $this->manualCode) {
         // Guarda el código y la imagen en la base de datos
         $codigoBarras = new CodigoBarras([
            'codigo_barras' => $code,
            'usuario_id' => auth()->id(),
-           'product_id' => (!empty($nombre)) ? $nombre->id : $this->selectedProduct,
+           'product_id' => (!empty($nombre)) ? $nombre->id : $product->id,
            'impresion' => false, // Establecer el valor por defecto como false
            'created_at' => now('America/Argentina/Buenos_Aires'),
        ]);
+
        $codigoBarras->save();
     }
 
@@ -329,9 +342,9 @@ public function generarCodigos()
         }
 
         // Asegúrate de que $this->codigoGenerado no sea nulo antes de agregarlo al array
-        if (!is_null($this->codigoGenerado)) {
+        /* if (!is_null($this->codigoGenerado)) {
             $this->imagenesGeneradas[] = $this->codigoGenerado;
-        }
+        } */
 
         // Limpiar el código generado para la próxima iteración
         $this->codigoGenerado = null;
@@ -537,7 +550,9 @@ $product = Product::firstOrCreate([
 
 public function generarCodigoManual()
 {
+    $this->manualCode = true;
     $this->generarCodigo($this->scannedCodeManual);
+    $this->manualCode = false;
     $this->scannedCodeManual = '';
 }
 
@@ -574,24 +589,27 @@ public function actualizarEstado($codigoId)
 
         // Actualiza el estado y el contador de reimpresiones del código de barras
         $codigo->update([
-            'impresion' => 0,
+            'impresion' => false,
             'contador_reimpresiones' => $nuevoContadorReimpresiones,
         ]);
-
         $this->actualizarEstado=true;
 
+        // Obtén el nombre del producto asociado al código de barras
+        $nombreProducto = $codigo->product;
         // Vuelve a generar la imagen del código de barras actualizado
-        $this->generateBarcodeFromCode($codigo->codigo_barras, $codigo->product_id);
+        $this->generateBarcodeFromCode($codigo->codigo_barras, $nombreProducto);
 
         // Vuelve a ejecutar la búsqueda para actualizar la lista de códigos
         $this->buscarCodigo();
     }
 }
-
 public function render()
     {
         // Modificar la consulta para obtener solo productos de la sucursal del usuario actual
-        $this->products = Product::where('sucursal_id', auth()->user()->sucursal_id)->get();
+        $this->products = Product::where('sucursal_id', auth()->user()->sucursal_id)
+        ->whereNotIn('nombre', ['Manual'])
+        ->whereNotIn('id', [0, 1, 2])
+        ->get();
 
         $ultimoCodigoGenerado = $this->obtenerUltimoCodigoGenerado(); // Agregado
         return view('livewire.codigo-barras-generator', [

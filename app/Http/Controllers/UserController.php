@@ -39,17 +39,33 @@ class UserController extends Controller
         $users = User::paginate();
     } elseif (Auth::user()->roles->contains('name', 'administrador_lavazza')) {
         // Si es un administrador_lavazza, obtener usuarios de la sucursal Lavazza
-        $users = User::where('sucursal_id', $userSucursalId)->paginate();
+        $users = User::where('sucursal_id', $userSucursalId)
+            ->whereDoesntHave('roles', function ($query) {
+                $query->where('name', 'administrador_lavazza');
+            })
+            ->whereHas('roles', function ($query) {
+                $query->where('name', 'usuario');
+            })
+            ->paginate();
     } elseif (Auth::user()->roles->contains('name', 'administrador_jumillano')) {
         // Si es un administrador_jumillano, obtener solo los usuarios de la sucursal Jumillano
         $users = User::where('sucursal_id', $userSucursalId)
+        ->whereDoesntHave('roles', function ($query) {
+            $query->where('name', 'administrador_jumillano');
+        })
+        ->whereHas('roles', function ($query) {
+            $query->where('name', 'usuario');
+        })
+        ->paginate();
+    } elseif (Auth::user()->roles->contains('name', 'administrador_impacto')) {
+        $users = User::where('sucursal_id', $userSucursalId)
             ->whereDoesntHave('roles', function ($query) {
-                $query->where('name', 'administrador');
+                $query->where('name', 'administrador_impacto');
+            })
+            ->whereHas('roles', function ($query) {
+                $query->where('name', 'usuario');
             })
             ->paginate();
-    } elseif (Auth::user()->roles->contains('name', 'administrador_impacto')) {
-        // Si es un administrador_impacto, obtener usuarios de la sucursal Impacto
-        $users = User::where('sucursal_id', $userSucursalId)->paginate();
     } else {
         // En caso contrario, no tiene permisos para ver usuarios
         abort(403, 'Unauthorized');
