@@ -603,13 +603,23 @@ public function actualizarEstado($codigoId)
         $this->buscarCodigo();
     }
 }
-public function render()
+    public function render()
     {
-        // Modificar la consulta para obtener solo productos de la sucursal del usuario actual
-        $this->products = Product::where('sucursal_id', auth()->user()->sucursal_id)
-        ->whereNotIn('nombre', ['Manual'])
-        ->whereNotIn('id', [0, 1, 2])
-        ->get();
+       // Inicializar la consulta sin restricciones de sucursal
+    $query = Product::query();
+
+    // Verificar si el usuario tiene el rol de administrador
+    if (Auth::user()->roles->contains('name','administrador')) {
+        $query->whereNotIn('nombre', ['Manual']);
+    } else {
+        // Aplicar restricciones para la sucursal del usuario actual
+        $query->where('sucursal_id', auth()->user()->sucursal_id)
+            ->whereNotIn('nombre', ['Manual'])
+            ->whereNotIn('id', [0, 1, 2]);
+    }
+
+    // Obtener los productos según la consulta construida
+    $this->products = $query->get();
 
         $ultimoCodigoGenerado = $this->obtenerUltimoCodigoGenerado(); // Agregado
         return view('livewire.codigo-barras-generator', [

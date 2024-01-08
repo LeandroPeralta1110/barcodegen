@@ -83,8 +83,11 @@ class ProductController extends Controller
     if ($request->has('sucursal_id')) {
         // Obtén la sucursal_id del formulario
         $sucursalId = $request->input('sucursal_id');
+    } elseif (Auth::user()->roles->contains('name','administrador')) {
+        // Obtén la sucursal_id del usuario si es administrador
+        $sucursalId = auth()->user()->sucursal_id;
     } else {
-        // Obtén la sucursal_id del usuario actual
+        // Si no es administrador, usa el valor predeterminado del usuario actual
         $sucursalId = auth()->user()->sucursal_id;
     }
 

@@ -15,7 +15,7 @@
         @role('administrador')
         <div class="form-group mt-3">
             {{ Form::label('sucursal_id', 'Unidad de Negocio') }}
-            {{ Form::select('sucursal_id', $sucursales, null, ['class' => 'form-control' . ($errors->has('sucursal_id') ? ' is-invalid' : ''), 'placeholder' => 'Selecciona una sucursal']) }}
+            {{ Form::select('sucursal_id', $sucursales, $sucursalSeleccionada, ['class' => 'form-control' . ($errors->has('sucursal_id') ? ' is-invalid' : ''), 'placeholder' => 'Selecciona una sucursal']) }}
             {!! $errors->first('sucursal_id', '<div class="invalid-feedback">:message</div>') !!}
         </div>
         @endrole

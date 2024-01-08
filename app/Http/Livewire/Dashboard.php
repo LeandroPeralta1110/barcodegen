@@ -55,6 +55,7 @@ class Dashboard extends Component
         if (!empty($this->busqueda)) {
             $query->where('codigo_barras', 'like', '%' . $this->busqueda . '%');
         }
+         /* dd($query->paginate(12, ['*'], 'page', $this->page));  */
 
         return $query->paginate(12, ['*'], 'page', $this->page);
     }
@@ -72,24 +73,26 @@ class Dashboard extends Component
     }
 
     public function getDatosGraficosTodosProductosAdmin()
-    {
-        $codigosGeneradosAdmin = $this->getCodigosGeneradosAdmin();
+{
+    $codigosGeneradosAdmin = $this->getCodigosGeneradosAdmin();
 
-        $datosTodosProductos = [];
+    $datosTodosProductos = [];
 
-        foreach ($codigosGeneradosAdmin as $codigoGenerado) {
-            $sucursal = optional($codigoGenerado->usuario->sucursal)->nombre ?? 'Sin Sucursal';
-            $productoNombre = optional($codigoGenerado->product)->nombre ?? 'Sin Producto';
+    foreach ($codigosGeneradosAdmin as $codigoGenerado) {
+        $producto = optional($codigoGenerado->product);
+        $sucursal = optional($producto->sucursal)->nombre ?? 'Sin Sucursal';
+        $productoNombre = $producto->nombre ?? 'Sin Producto';
 
-            if (!isset($datosTodosProductos[$sucursal][$productoNombre])) {
-                $datosTodosProductos[$sucursal][$productoNombre] = 1;
-            } else {
-                $datosTodosProductos[$sucursal][$productoNombre]++;
-            }
+        if (!isset($datosTodosProductos[$sucursal][$productoNombre])) {
+            $datosTodosProductos[$sucursal][$productoNombre] = 1;
+        } else {
+            $datosTodosProductos[$sucursal][$productoNombre]++;
         }
-
-        return $datosTodosProductos;
     }
+
+    return $datosTodosProductos;
+}
+
 
     public function getDatosGraficosTodosProductos()
 {

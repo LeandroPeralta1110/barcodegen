@@ -35,7 +35,6 @@
                 <div class="w-full mt-2">
                     <input wire:model="cantidadCodigos" type="number" class="border rounded-md py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" placeholder="Ingrese cantidad" required>
                 </div>
-                
             </div>
 
             @if($mostrarPopup)
@@ -132,7 +131,9 @@
 
         <div class="mb-4 mt-5 mx-auto text-center">
             <!-- Botón centrado -->
-            <button wire:click="generarCodigos" class="border border-gray-300 rounded p-2 bg-green-500 text-white mb-2">GENERAR CODIGOS DE BARRAS</button>
+            <button wire:click="generarCodigos" class="bg-green-500 hover:bg-green-600 text-white font-semibold py-3 px-6 rounded-full focus:outline-none focus:shadow-outline-green active:bg-green-800 transition-all duration-300 ease-in-out">
+                GENERAR CODIGOS DE BARRAS
+            </button>
             <span wire:loading wire:target="generarCodigos"><span class="cargando-icono"></span></span>
             <!-- Primer input centrado -->
             <div class="w-full mt-5 relative">

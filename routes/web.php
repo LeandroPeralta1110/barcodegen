@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\dashboardController;
 use Spatie\Permission\Middlewares\RoleMiddleware as RoleMiddleware;
 use App\Http\Livewire\AdminController;
 use Illuminate\Support\Facades\Route;
@@ -21,9 +22,7 @@ use App\Http\Livewire\Dashboard;
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
-});
+Route::get('/', [dashboardController::class, 'welcome']);
 
 // ...
 
