@@ -42,27 +42,27 @@
     <body class="font-sans antialiased">
         <x-banner />
 
+        @livewire('navigation-menu')
+        
+        <!-- Page Heading -->
+        @if (isset($header))
+        <header class="bg-white shadow">
+            <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+                {{ $header }}
+            </div>
+        </header>
+        @endif
+        
         <div class="min-h-screen bg-gray-100 bg-cover bg-center bg-fixed imagenfondo flex flex-col">
-            @livewire('navigation-menu')
-        
-            <!-- Page Heading -->
-            @if (isset($header))
-                <header class="bg-white shadow">
-                    <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-                        {{ $header }}
-                    </div>
-                </header>
-            @endif
-        
             <!-- Page Content -->
             <main class="flex-grow">
                 {{ $slot }}
             </main>
             
+        </div>
             <footer id="footer" class="hidden bg-gray-800 text-white text-center py-2">
                 Todos los derechos reservados &copy; {{ now()->year }} Area de Sistemas Ivess El Jumillano
             </footer>
-        </div>
         
         @stack('modals')
         

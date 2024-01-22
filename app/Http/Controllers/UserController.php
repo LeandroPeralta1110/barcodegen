@@ -156,17 +156,17 @@ class UserController extends Controller
                 return redirect()->back()->with('error', 'El rol especificado no existe.');
             }
     } elseif (Auth::user()->roles->contains('name', 'administrador_jumillano')) {
-        // Si es administrador_jumillano, asignar el rol 'usuario' (puedes personalizar esta lógica según tus necesidades)
+        // Si es administrador_jumillano, asignar el rol 'usuario'
         $role = Role::where('name', 'usuario')->first();
         $user->assignRole($role);
         $user->sucursal_id = 1;
     } elseif (Auth::user()->roles->contains('name', 'administrador_lavazza')) {
-        // Si es administrador_lavazza, asignar el rol 'usuario' (puedes personalizar esta lógica según tus necesidades)
+        // Si es administrador_lavazza, asignar el rol 'usuario'
         $role = Role::where('name', 'usuario')->first();
         $user->assignRole($role);
         $user->sucursal_id = 2;
     } elseif (Auth::user()->roles->contains('name', 'administrador_impacto')) {
-        // Si es administrador_impacto, asignar el rol 'usuario' (puedes personalizar esta lógica según tus necesidades)
+        // Si es administrador_impacto, asignar el rol 'usuario'
         $role = Role::where('name', 'usuario')->first();
         $user->assignRole($role);
         $user->sucursal_id = 3;
@@ -300,7 +300,7 @@ class UserController extends Controller
 
     if ($user) {
         $user->update(['activo' => false]);
-        return redirect()->route('users.index')->with('success', 'Usuario Desactivado');
+        return redirect()->route('users.index')->with('success', 'Usuario Eliminado Correctamente');
     }
 
     return redirect()->route('users.index')->with('error', 'User not found');

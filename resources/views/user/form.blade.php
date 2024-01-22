@@ -1,12 +1,12 @@
-<div class="box box-info padding-1">
+<div class="box box-info">
     <div class="box-body">
         
-        <div class="form-group mt-3">
+        <div class="form-group mt-2">
             {{ Form::label('Usuario') }}
             {{ Form::text('name', $user->name, ['class' => 'form-control' . ($errors->has('name') ? ' is-invalid' : ''), 'placeholder' => 'Name']) }}
             {!! $errors->first('name', '<div class="invalid-feedback">:message</div>') !!}
         </div>
-        <div class="form-group mt-3">
+        <div class="form-group mt-2">
             {{ Form::label('email') }}
             {{ Form::text('email', $user->email, ['class' => 'form-control' . ($errors->has('email') ? ' is-invalid' : ''), 'placeholder' => 'Email']) }}
             {!! $errors->first('email', '<div class="invalid-feedback">:message</div>') !!}
@@ -14,7 +14,7 @@
 
         @role('administrador')
 
-        <div class="form-group mt-3">
+        <div class="form-group mt-2">
             {{ Form::label('role', 'Rol') }}
             {{ Form::select('role', $roles, null, ['class' => 'form-control', 'placeholder' => 'Seleccione un Rol']) }}
             {!! $errors->first('role', '<div class="invalid-feedback">:message</div>') !!}
@@ -27,7 +27,7 @@
         
         @endrole                
         
-        <div class="form-group mt-3">
+        <div class="form-group mt-2">
             {{ Form::label('Contraseña') }}
             {{ Form::password('password', ['class' => 'form-control' . ($errors->has('password') ? ' is-invalid' : ''), 'placeholder' => 'Password']) }}
             {!! $errors->first('password', '<div class="invalid-feedback">:message</div>') !!}

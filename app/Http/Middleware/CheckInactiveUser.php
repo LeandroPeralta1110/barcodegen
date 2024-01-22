@@ -22,7 +22,7 @@ class CheckInactiveUser
             $request->session()->invalidate();
             $request->session()->regenerateToken();
 
-            return redirect()->route('login')->with('error', 'Your account is not active.');
+            return redirect()->route('login')->with('error', 'Usuario no autorizado.');
         }
 
         return $next($request);

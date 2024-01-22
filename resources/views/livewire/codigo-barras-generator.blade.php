@@ -1,4 +1,4 @@
-<div class="h-screen flex">
+<div>
     <div class="w-full flex space-x-4">
         <div class="w-1/2 flex flex-col bg-white border border-gray-300 p-8 rounded-md">                       
             <div class="mb-4">

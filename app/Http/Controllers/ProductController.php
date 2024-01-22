@@ -134,7 +134,9 @@ class ProductController extends Controller
         // Obtener todas las sucursales para el campo de selección
         $sucursales = \App\Models\Sucursal::pluck('nombre', 'id');
 
-        return view('product.edit', compact('product', 'sucursales'));
+        $sucursalSeleccionada = $product->sucursal_id;
+
+        return view('product.edit', compact('product', 'sucursales','sucursalSeleccionada'));
     }
 
     /**

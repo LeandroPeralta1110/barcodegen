@@ -9,7 +9,9 @@
             <div class="p-4">
                 <form method="POST" action="{{ route('users.store') }}" role="form" enctype="multipart/form-data">
                     @csrf
-                    @include('user.form')
+                    <div class="grid grid-cols-2 gap-4">
+                        @include('user.form')
+                    </div>
                 </form>
             </div>
         </div>

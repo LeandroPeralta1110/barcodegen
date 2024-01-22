@@ -19,7 +19,9 @@
                         <form method="POST" action="{{ route('users.update', $user->id) }}" role="form" enctype="multipart/form-data">
                             @method('PATCH')
                             @csrf
+                            <div class="grid grid-cols-2 gap-4">
                             @include('user.form')
+                            </div>
                         </form>
                     </div>
                 </div>
