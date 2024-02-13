@@ -124,6 +124,23 @@
                         <button wire:click="guardarNuevoProducto" class="border border-gray-300 rounded p-2 bg-green-500 text-white mb-2">Generar</button>
                         <button wire:click="ocultarPopup" class="border border-gray-300 rounded p-2 bg-red-500 text-white mb-2">Cancelar</button>
                         @endrole
+                        @role('administrador_nafa')
+                        <!-- Input para el nombre del producto -->
+                        <div class="mb-4">
+                            <label for="nuevoProductoNombre">Nombre del Producto</label>
+                            <input wire:model="nuevoProductoNombre" id="nuevoProductoNombre" type="text" class="border rounded-md py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
+                        </div>
+        
+                        <!-- Input para la descripción del producto -->
+                        <div class="mb-4">
+                            <label for="nuevoProductoDescripcion">Descripción del Producto</label>
+                            <input wire:model="nuevoProductoDescripcion" id="nuevoProductoDescripcion" type="text" class="border rounded-md py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required value='{{ $alfanumerico }}'>
+                        </div>
+        
+                        <!-- Botones del popup -->
+                        <button wire:click="guardarNuevoProducto" class="border border-gray-300 rounded p-2 bg-green-500 text-white mb-2">Generar</button>
+                        <button wire:click="ocultarPopup" class="border border-gray-300 rounded p-2 bg-red-500 text-white mb-2">Cancelar</button>
+                        @endrole
                         @endif
                 </div>
             </div>
@@ -273,6 +290,44 @@
             </div>                
             @endrole 
             @role('administrador_impacto')
+            <!-- Segundo input centrado -->
+            <div class="w-full mt-5">
+                <label for="scannedCodeInputManual" class="control-label mt-2 text-left"></label>
+                <div class="border border-gray-300 rounded p-2">
+                    <!-- Usa el evento @input para capturar los cambios en el campo de entrada -->
+                    <input
+                        wire:model="scannedCodeManual"
+                        id="scannedCodeInputManual" 
+                        name="scannedCodeInputManual" 
+                        placeholder="Ingresar manualmente"
+                        class="border rounded-md w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                        required
+                        wire:keydown.enter="enviarCodigoEscaneado"
+                    >
+                    <button wire:click="generarCodigoManual" class="border border-gray-300 rounded p-2 mt-4 bg-blue-500 text-white mb-2">Generar Manualmente</button>
+                </div>
+            </div>  
+            <div class="mb-4 mt-5">
+                <label for="buscarCodigo" class="control-label mt-2 w-full text-left"><b>Buscar por Código de Barras</b></label>
+                <div class="w-full mt-2">
+                    <input wire:model="buscarCodigo" type="text" class="border rounded-md py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" placeholder="Ingrese código de barras">
+                </div>
+            
+                @if (!empty($codigosEncontrados))
+                    <p class="text-green-500 mt-2"><b>Códigos de Barras Encontrados:</b></p>
+                    <ul>
+                        @foreach ($codigosEncontrados as $codigoEncontrado)
+                            <li>
+                                {{ $codigoEncontrado->codigo_barras }} <button wire:click="actualizarEstado({{ $codigoEncontrado->id }})" class="border border-gray-300 rounded p-2 mt-4 bg-blue-500 text-white mb-2" style="cursor: pointer">Reimprimir</button>
+                            </li>
+                        @endforeach
+                    </ul>
+                @else
+                    <p class="text-red-500 mt-2"><b>No se encontraron códigos de barras.</b></p>
+                @endif
+            </div>                
+            @endrole 
+            @role('administrador_nafa')
             <!-- Segundo input centrado -->
             <div class="w-full mt-5">
                 <label for="scannedCodeInputManual" class="control-label mt-2 text-left"></label>

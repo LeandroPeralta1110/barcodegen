@@ -35,6 +35,9 @@ class ProductController extends Controller
     } elseif (Auth::user()->roles->contains('name', 'administrador_impacto')) {
         // Si es un administrador_impacto, obtener solo los productos de la sucursal Impacto excluyendo "Manual"
         $products = Product::where('sucursal_id', 3)->where('nombre', '!=', $manualProductName)->paginate($perPage);
+    } elseif (Auth::user()->roles->contains('name', 'administrador_nafa')) {
+        // Si es un administrador_nafa, obtener solo los productos de la sucursal nafa excluyendo "Manual"
+        $products = Product::where('sucursal_id', 4)->where('nombre', '!=', $manualProductName)->paginate($perPage);
     } else {
         // En caso contrario, no tiene permisos para ver productos
         abort(403, 'Unauthorized');
@@ -55,6 +58,12 @@ class ProductController extends Controller
         if (Auth::user()->roles->contains('name', 'administrador')) {
             $this->authorize('create product', Product::class);
         } elseif (Auth::user()->roles->contains('name', 'administrador_lavazza')) {
+            $this->authorize('create product', Product::class);
+        } elseif (Auth::user()->roles->contains('name', 'administrador_impacto')) {
+            $this->authorize('create product', Product::class);
+        } elseif (Auth::user()->roles->contains('name', 'administrador_jumillano')) {
+            $this->authorize('create product', Product::class);
+        } elseif (Auth::user()->roles->contains('name', 'administrador_nafa')) {
             $this->authorize('create product', Product::class);
         }
        
@@ -166,6 +175,12 @@ class ProductController extends Controller
     if (Auth::user()->roles->contains('name', 'administrador')) {
     $this->authorize('delete product', Product::class);
     }elseif(Auth::user()->roles->contains('name', 'administrador_lavazza')){
+        $this->authorize('delete product', Product::class);
+    }elseif(Auth::user()->roles->contains('name', 'administrador_jumillano')){
+        $this->authorize('delete product', Product::class);
+    }elseif(Auth::user()->roles->contains('name', 'administrador_impacto')){
+        $this->authorize('delete product', Product::class);
+    }elseif(Auth::user()->roles->contains('name', 'administrador_nafa')){
         $this->authorize('delete product', Product::class);
     }
 

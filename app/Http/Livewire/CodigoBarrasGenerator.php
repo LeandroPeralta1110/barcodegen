@@ -65,11 +65,12 @@ class CodigoBarrasGenerator extends Component
     //o si el codigo es escaneado
     public function generarCodigo($scannedCode = null)
 {
-    //Si el codigo de barras fue escrito manualmente no lo toma
+    //Si el codigo de barras fue escrito manualmente en en input "escanear codigo de barras aqui" no lo toma
     if ($this->esEntradaManual) {
         return;
     }
 
+    //Si el codigo de barras fue escrito manualmente por un administrsdor lo toma
     if ($this->manualCode) {
         $this->generateBarcodeFromCode($scannedCode, $this->productoCreado);
         return;
@@ -173,7 +174,7 @@ private function generateUniqueCode()
     $product = Product::find($this->selectedProduct);
 
     // Genera un número aleatorio de 6 dígitos
-    $numeroAleatorio = strval(mt_rand(100000, 999999));
+    $numeroAleatorio = strval(mt_rand(10000000, 99999999));
 
     // Crea un código alfanumérico único concatenando la descripción del producto y el número aleatorio
     $codigoAlfanumerico = $product->descripcion . $numeroAleatorio;

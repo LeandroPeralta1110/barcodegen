@@ -36,7 +36,7 @@ class UserController extends Controller
 
     if (Auth::user()->roles->contains('name', 'administrador')) {
         // Si es un administrador, obtener todos los usuarios y administradores
-        $users = User::paginate();
+        $users = User::where('activo', 1)->paginate(12);
     } elseif (Auth::user()->roles->contains('name', 'administrador_lavazza')) {
         // Si es un administrador_lavazza, obtener usuarios de la sucursal Lavazza
         $users = User::where('sucursal_id', $userSucursalId)
@@ -46,7 +46,8 @@ class UserController extends Controller
             ->whereHas('roles', function ($query) {
                 $query->where('name', 'usuario');
             })
-            ->paginate();
+            ->where('activo', '<>', 0) 
+            ->paginate(12);
     } elseif (Auth::user()->roles->contains('name', 'administrador_jumillano')) {
         // Si es un administrador_jumillano, obtener solo los usuarios de la sucursal Jumillano
         $users = User::where('sucursal_id', $userSucursalId)
@@ -56,7 +57,8 @@ class UserController extends Controller
         ->whereHas('roles', function ($query) {
             $query->where('name', 'usuario');
         })
-        ->paginate();
+        ->where('activo', '<>', 0) 
+        ->paginate(12);
     } elseif (Auth::user()->roles->contains('name', 'administrador_impacto')) {
         $users = User::where('sucursal_id', $userSucursalId)
             ->whereDoesntHave('roles', function ($query) {
@@ -65,7 +67,18 @@ class UserController extends Controller
             ->whereHas('roles', function ($query) {
                 $query->where('name', 'usuario');
             })
-            ->paginate();
+            ->where('activo', '<>', 0) 
+            ->paginate(12);
+    }elseif (Auth::user()->roles->contains('name', 'administrador_nafa')) {
+        $users = User::where('sucursal_id', $userSucursalId)
+                    ->whereDoesntHave('roles', function ($query) {
+                        $query->where('name', 'administrador_nafa');
+                    })
+                    ->whereHas('roles', function ($query) {
+                        $query->where('name', 'usuario');
+                    })
+                    ->where('activo', '<>', 0) 
+                    ->paginate(12);        
     } else {
         // En caso contrario, no tiene permisos para ver usuarios
         abort(403, 'Unauthorized');
@@ -91,6 +104,8 @@ class UserController extends Controller
         }elseif (Auth::user()->roles->contains('name', 'administrador_jumillano')) {
             $this->authorize('create user', User::class);
         }elseif (Auth::user()->roles->contains('name', 'administrador_impacto')) {
+            $this->authorize('create user', User::class);
+        }elseif (Auth::user()->roles->contains('name', 'administrador_nafa')) {
             $this->authorize('create user', User::class);
         }
     
@@ -143,6 +158,8 @@ class UserController extends Controller
                 $user->sucursal_id = 2;
             }elseif($role === '6'){
                 $user->sucursal_id = 3;
+            }elseif($role === '7'){
+                $user->sucursal_id = 4;
             }
            
 
@@ -170,6 +187,11 @@ class UserController extends Controller
         $role = Role::where('name', 'usuario')->first();
         $user->assignRole($role);
         $user->sucursal_id = 3;
+    } elseif (Auth::user()->roles->contains('name', 'administrador_nafa')) {
+        // Si es administrador_impacto, asignar el rol 'usuario'
+        $role = Role::where('name', 'usuario')->first();
+        $user->assignRole($role);
+        $user->sucursal_id = 4;
     }
 
     // Obtener los roles después de asignarlos
@@ -209,6 +231,8 @@ class UserController extends Controller
         } elseif (Auth::user()->roles->contains('name', 'administrador_impacto')) {
             $this->authorize('edit user', User::class);
         } elseif (Auth::user()->roles->contains('name', 'administrador_jumillano')) {
+            $this->authorize('edit user', User::class);
+        } elseif (Auth::user()->roles->contains('name', 'administrador_nafa')) {
             $this->authorize('edit user', User::class);
         }
     
@@ -250,7 +274,7 @@ class UserController extends Controller
         }
     
         // Verificar si el usuario autenticado tiene permiso para asignar roles
-        if (Auth::user()->roles->contains('name', 'administrador')||Auth::user()->roles->contains('name', 'administrador_jumillano')||Auth::user()->roles->contains('name', 'administrador_lavazza')||Auth::user()->roles->contains('name', 'administrador_impacto')) {
+        if (Auth::user()->roles->contains('name', 'administrador')||Auth::user()->roles->contains('name', 'administrador_jumillano')||Auth::user()->roles->contains('name', 'administrador_lavazza')||Auth::user()->roles->contains('name', 'administrador_impacto')||Auth::user()->roles->contains('name', 'administrador_nafa')) {
             // Verificar si se seleccionó un nuevo rol y asignarlo al usuario
             $selectedRole = $request->input('role');
             if ($selectedRole) {
@@ -266,6 +290,8 @@ class UserController extends Controller
                         $user->sucursal_id = 2;
                     } elseif ($role->name === 'administrador_impacto') {
                         $user->sucursal_id = 3;
+                    } elseif ($role->name === 'administrador_nafa') {
+                        $user->sucursal_id = 4;
                     }
                     
                 } else {
@@ -293,6 +319,8 @@ class UserController extends Controller
     } elseif (Auth::user()->roles->contains('name', 'administrador_impacto')) {
         $this->authorize('delete user', User::class);
     } elseif (Auth::user()->roles->contains('name', 'administrador_jumillano')) {
+        $this->authorize('delete user', User::class);
+    } elseif (Auth::user()->roles->contains('name', 'administrador_nafa')) {
         $this->authorize('delete user', User::class);
     }
 
