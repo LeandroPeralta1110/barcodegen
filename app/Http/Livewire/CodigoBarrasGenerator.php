@@ -232,13 +232,12 @@ private function generateBarcodeFromCode($code, $nombre = null)
     // Rellenar el fondo con blanco
     imagefilledrectangle($combinedImg, 0, 0, $anchoCodigo, $altoDeseado, $colorFondo);
     
-    
     if (!empty($nombre)) {
         $product = Product::find($nombre->id);
         /* dd($product); */
     } elseif ($this->manualCode){
         // Buscar el producto manual según la sucursal del usuario
-        $product = Product::where(['nombre' => 'Manual', 'sucursal_id' => $sucursalUsuario])->first();
+        $product = Product::where(['nombre' => 'manual', 'sucursal_id' => $sucursalUsuario])->first();
     }
 
     // Crear un color negro para el texto
@@ -246,9 +245,8 @@ private function generateBarcodeFromCode($code, $nombre = null)
 
     // Calcular la posición para el nombre del producto
     $font_size = 20; // Tamaño de fuente
-
     
-    $nombreProducto = $this->manualCode ? 'Manual' : $product;
+    $nombreProducto = $this->manualCode ? 'manual' : $product;
 
     if (!empty($nombre)) {
         $xNombreProducto = ($anchoCodigo - imagefontwidth($font_size) * strlen($product->nombre)) / 2;

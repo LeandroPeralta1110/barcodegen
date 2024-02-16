@@ -155,11 +155,11 @@ class UserController extends Controller
             }elseif ($role === '4') {
                 $user->sucursal_id = 1; // Asigna el ID de la sucursal correspondiente para Jumillano
             }elseif($role === '5'){
-                $user->sucursal_id = 2;
+                $user->sucursal_id = 2; //lavazza
             }elseif($role === '6'){
-                $user->sucursal_id = 3;
+                $user->sucursal_id = 3; //impacto
             }elseif($role === '7'){
-                $user->sucursal_id = 4;
+                $user->sucursal_id = 4; //nafa
             }
            
 
